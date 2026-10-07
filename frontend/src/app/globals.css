@@ -1,0 +1,117 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root,
+html.dark,
+[data-theme="dark"] {
+  --bg: #11110F;
+  --surface: #191916;
+  --surface-highlight: #22221E;
+  --surface-dark: #0D0D0B;
+  --primary-text: #E8E4D9;
+  --muted-text: #8D8A80;
+  --border: #383831;
+  --primary-accent: #D6FF3F;
+  --primary-accent-contrast: #11110F;
+  --warning: #FFB84D;
+  --warning-contrast: #11110F;
+  --error: #FF5C5C;
+  --error-contrast: #11110F;
+  --grid-line: rgba(56, 56, 49, 0.28);
+}
+
+html.light,
+[data-theme="light"] {
+  --bg: #F4F1E8;
+  --surface: #FFFDF7;
+  --surface-highlight: #EDE8DA;
+  --surface-dark: #E6E1D2;
+  --primary-text: #171714;
+  --muted-text: #6F6B61;
+  --border: #D7D2C5;
+  --primary-accent: #607A00;
+  --primary-accent-contrast: #FFFFFF;
+  --warning: #A96800;
+  --warning-contrast: #FFFFFF;
+  --error: #C0392B;
+  --error-contrast: #FFFFFF;
+  --grid-line: rgba(195, 189, 174, 0.45);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  background-color: var(--bg);
+  color: var(--primary-text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Inter", "DM Sans", sans-serif;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+/* Custom Scrollbar for Industrial Feel */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg);
+  border-left: 1px solid var(--border);
+  border-top: 1px solid var(--border);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted-text);
+}
+
+/* Monospace rule */
+.font-mono {
+  font-family: "IBM Plex Mono", Consolas, "Liberation Mono", Courier New, monospace;
+}
+
+/* Selection */
+::selection {
+  background-color: var(--primary-accent);
+  color: var(--primary-accent-contrast);
+}
+
+/* Technical grid background pattern */
+.technical-grid {
+  background-size: 32px 32px;
+  background-image: 
+    linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+}
+
+/* Ruled paper line */
+.ruled-line {
+  border-bottom: 1px dashed var(--border);
+}
+
+/* Fast subtle transitions */
+button,
+a,
+input,
+select,
+textarea {
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, opacity 0.15s ease;
+}
+
+/* Controlled horizontal table wrapper */
+.table-scroll-container {
+  overflow-x: auto;
+  max-width: 100%;
+  -webkit-overflow-scrolling: touch;
+}

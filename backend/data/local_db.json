@@ -1,0 +1,313 @@
+{
+  "admins": [
+    {
+      "id": "admin_root",
+      "username": "admin",
+      "name": "Contest Controller",
+      "passwordHash": "$2a$10$WzLgJa8lvfFwxiOPABqcMuR5DOj6poZb69jdUAV/jcD61cG/0WjPy",
+      "role": "ADMIN",
+      "active": true,
+      "createdAt": "2026-10-07T16:13:00.363Z"
+    }
+  ],
+  "teams": [
+    {
+      "id": "team_1791390445301_31wt5",
+      "_id": "team_1791390445301",
+      "teamNumber": "T-027",
+      "teamName": "BYTE RAIDERS",
+      "teamLeader": "Alex Vance",
+      "thinker": "Elena Rostova",
+      "coder": "Marcus Brody",
+      "debugger": "Sarah Chen",
+      "supporter": "Kenji Sato",
+      "currentRound": 1,
+      "status": "IN_ROUND_1",
+      "registeredAt": "2026-10-07T16:27:25.301Z"
+    },
+    {
+      "id": "team_1791392014208_hi08q",
+      "_id": "team_1791392014208",
+      "teamNumber": "T-01",
+      "teamName": "vitaweave",
+      "teamLeader": "Anushka Verma",
+      "thinker": "Anushka verma",
+      "coder": "Tanush patel",
+      "debugger": "Ayush Dubey",
+      "supporter": "Anusha Sharma",
+      "currentRound": 3,
+      "status": "FINISHED",
+      "registeredAt": "2026-10-07T16:53:34.208Z"
+    }
+  ],
+  "contest": {
+    "id": "contest_main",
+    "status": "ACTIVE",
+    "contestStartTime": "2026-10-07T16:58:47.898Z",
+    "contestEndTime": null,
+    "round1Status": "ACTIVE",
+    "round2Status": "LOCKED",
+    "round3Status": "LOCKED"
+  },
+  "questions": [
+    {
+      "id": "q_1_1",
+      "round": 1,
+      "questionNumber": 1,
+      "type": "CODING",
+      "content": {
+        "title": "Bitwise Parity Compression",
+        "problemStatement": "You are given a stream of 8-bit sensor telemetry packets. For each integer in array A, compute the bitwise XOR sum of its popcount and its parity mask. Let S be the sum of all computed values modulo 100. Return S as a 2-digit number (zero-padded if < 10).",
+        "inputDescription": "Array of integers A: [15, 23, 8, 99, 4, 67, 112, 5]",
+        "outputDescription": "2-digit numeric code.",
+        "constraints": [
+          "1 <= A.length <= 10^4",
+          "0 <= A[i] <= 255"
+        ],
+        "examples": [
+          {
+            "input": "A = [15, 23, 8]",
+            "output": "07",
+            "explanation": "Computed checksum yields 7 -> 07."
+          }
+        ]
+      },
+      "expectedAnswer": "42",
+      "active": true
+    },
+    {
+      "id": "q_1_2",
+      "round": 1,
+      "questionNumber": 2,
+      "type": "CODING",
+      "content": {
+        "title": "Graph Latency Bottleneck",
+        "problemStatement": "Given a directed weighted network graph with 6 nodes representing core switches, calculate the critical path bottleneck value from node 1 to node 6. Let B be the maximum latency edge along the shortest path. Compute B % 100.",
+        "inputDescription": "Nodes: 6, Edges: [(1,2,14), (1,3,9), (2,4,18), (3,4,11), (4,5,7), (5,6,12), (3,5,22)]",
+        "outputDescription": "2-digit integer.",
+        "constraints": [
+          "N <= 1000",
+          "Edge weights > 0"
+        ],
+        "examples": [
+          {
+            "input": "Sample topology",
+            "output": "18",
+            "explanation": "Shortest path latency bottleneck edge is 18."
+          }
+        ]
+      },
+      "expectedAnswer": "18",
+      "active": true
+    },
+    {
+      "id": "q_1_3",
+      "round": 1,
+      "questionNumber": 3,
+      "type": "CODING",
+      "content": {
+        "title": "Prefix Sum Inversion Count",
+        "problemStatement": "In an execution trace of thread identifiers [9, 1, 8, 2, 7, 3, 6, 4, 5], calculate the number of inversions (pairs (i, j) where i < j and A[i] > A[j]). Output the inversion count modulo 100.",
+        "inputDescription": "Array trace A = [9, 1, 8, 2, 7, 3, 6, 4, 5]",
+        "outputDescription": "2-digit integer modulo 100.",
+        "constraints": [
+          "N <= 5000"
+        ],
+        "examples": [
+          {
+            "input": "[3, 2, 1]",
+            "output": "03",
+            "explanation": "3 inversions -> 03"
+          }
+        ]
+      },
+      "expectedAnswer": "73",
+      "active": true
+    },
+    {
+      "id": "q_1_4",
+      "round": 1,
+      "questionNumber": 4,
+      "type": "CODING",
+      "content": {
+        "title": "Binary Matrix Island Perimeter",
+        "problemStatement": "Given a 6x6 memory buffer represented as a binary matrix where 1 represents an allocated sector and 0 is free space, calculate the total perimeter of all connected allocation clusters (isolated edges touching 0 or boundary). Output total perimeter % 100.",
+        "inputDescription": "Grid: [[0,1,1,0,0,0],[1,1,0,0,1,1],[0,0,1,1,1,0],[0,1,1,0,0,0],[1,0,0,1,1,0],[0,0,1,1,0,0]]",
+        "outputDescription": "2-digit integer.",
+        "constraints": [
+          "Grid size 6x6"
+        ],
+        "examples": [
+          {
+            "input": "Single cell [[1]]",
+            "output": "04",
+            "explanation": "4 perimeter units -> 04"
+          }
+        ]
+      },
+      "expectedAnswer": "29",
+      "active": true
+    },
+    {
+      "id": "q_1_5",
+      "round": 1,
+      "questionNumber": 5,
+      "type": "CODING",
+      "content": {
+        "title": "Matrix Chain Scalar Multiplication Cost",
+        "problemStatement": "Determine the minimal number of scalar multiplications needed to multiply a sequence of 4 matrices with dimensions: A1: 10x30, A2: 30x5, A3: 5x60, A4: 60x10. Calculate (minimal_scalar_multiplications / 50) % 100.",
+        "inputDescription": "Dimensions: [10, 30, 5, 60, 10]",
+        "outputDescription": "2-digit integer.",
+        "constraints": [
+          "Standard Matrix Chain Multiplication"
+        ],
+        "examples": [
+          {
+            "input": "[10, 20, 30]",
+            "output": "12",
+            "explanation": "Cost 6000 / 500 = 12"
+          }
+        ]
+      },
+      "expectedAnswer": "84",
+      "active": true
+    },
+    {
+      "id": "q_1_6",
+      "round": 1,
+      "questionNumber": 6,
+      "type": "CODING",
+      "content": {
+        "title": "Stack-Based Syntax Parser Checksum",
+        "problemStatement": "Evaluate the token stream with nested scopes: \"{ [ ( [ ] ) ] { [ ] } ( ) }\". For each token pair, multiply the nesting depth by the bracket type weight ({} = 3, [] = 2, () = 1). Sum all products and take modulo 100.",
+        "inputDescription": "String: \"{ [ ( [ ] ) ] { [ ] } ( ) }\"",
+        "outputDescription": "2-digit integer.",
+        "constraints": [
+          "String length <= 256"
+        ],
+        "examples": [
+          {
+            "input": "\"{ [ ] }\"",
+            "output": "07",
+            "explanation": "Depth 1 * 3 + Depth 2 * 2 = 7 -> 07"
+          }
+        ]
+      },
+      "expectedAnswer": "56",
+      "active": true
+    },
+    {
+      "id": "q_2_1",
+      "round": 2,
+      "questionNumber": 1,
+      "type": "DEBUGGING",
+      "content": {
+        "title": "Off-By-One Buffer Parser & Pointer Arithmetic",
+        "problemStatement": "The following telemetry parser has an off-by-one pointer slip and an uninitialized accumulator flaw. It fails to correctly compute the checksum of the message payload \"C//L-ALPHA-7729\". Fix the bug in the provided code and run it with the input payload. What is the resulting 3-digit checksum output?",
+        "inputDescription": "Payload: \"C//L-ALPHA-7729\"",
+        "outputDescription": "Exact 3-digit integer produced by the fixed program.",
+        "constraints": [
+          "C / C++ / Python compatible logic"
+        ],
+        "starterCode": "// BROKEN TELEMETRY PARSER (C++)\n#include <iostream>\n#include <string>\n\nint compute_checksum(const std::string& data) {\n    int sum; // BUG 1: Uninitialized accumulator!\n    int len = data.length();\n    \n    // BUG 2: Loop condition exceeds buffer boundary and skips last element\n    for (int i = 1; i <= len; i++) { \n        char c = data[i]; // Potential out-of-bounds access\n        sum += (c * (i + 3)) ^ 0x1F;\n    }\n    \n    return (sum % 900) + 100; // Returns 3-digit number\n}\n\nint main() {\n    std::string payload = \"C//L-ALPHA-7729\";\n    std::cout << compute_checksum(payload) << std::endl;\n    return 0;\n}",
+        "language": "cpp"
+      },
+      "expectedAnswer": "419",
+      "active": true
+    },
+    {
+      "id": "q_2_2",
+      "round": 2,
+      "questionNumber": 2,
+      "type": "DEBUGGING",
+      "content": {
+        "title": "Integer Overflow & Boundary Comparator Bug",
+        "problemStatement": "The following interval scheduler produces incorrect scheduling weights due to signed 16-bit integer truncation and incorrect strictly-greater comparator logic. Fix the broken comparator and variable typing. When fed with the task sequence, find the corrected 3-digit schedule metric.",
+        "inputDescription": "Tasks: [(1, 5, 120), (3, 7, 250), (6, 12, 410), (8, 14, 180), (10, 15, 330)]",
+        "outputDescription": "Exact 3-digit integer produced by the fixed code.",
+        "constraints": [
+          "Python / C++ logic"
+        ],
+        "starterCode": "# BROKEN INTERVAL SCHEDULER (Python)\ndef solve_schedule(intervals):\n    # BUG 1: sorting by start time instead of end time for greedy interval scheduling\n    # BUG 2: improper overlap condition allows colliding intervals\n    sorted_tasks = sorted(intervals, key=lambda x: x[0])\n    \n    last_end = 0\n    total_metric = 0\n    \n    for start, end, weight in sorted_tasks:\n        # BUG: should be start >= last_end\n        if start > last_end:\n            total_metric = (total_metric + weight * 7) % 1000\n            last_end = end\n            \n    # Normalize to 3-digit code\n    return total_metric\n\ntasks = [(1, 5, 120), (3, 7, 250), (6, 12, 410), (8, 14, 180), (10, 15, 330)]\nprint(solve_schedule(tasks))",
+        "language": "python"
+      },
+      "expectedAnswer": "832",
+      "active": true
+    },
+    {
+      "id": "q_3_1",
+      "round": 3,
+      "questionNumber": 1,
+      "type": "LOGIC_EXTRACTION",
+      "content": {
+        "title": "The Core Reactor Lock: Synchronized Extraction",
+        "problemStatement": "The final CODE//LOCK system requires complete team collaboration.\nEach role possesses a fragmented sub-key derived from the event matrix:\n\n[ROLE FRAGMENTS]\n1. THINKER: Decodes the cipher matrix shift pattern:\n   Matrix A: [5, 9, 2, 8] with base modulus 7. Result = 3\n\n2. CODER: Executes the algorithmic permutation transform:\n   Rotate binary key 0b10110011 left by 3 bits, XOR with 0xAA. Result = 9\n\n3. DEBUGGER: Repairs the corrupted parity checksum in trace #409:\n   Fixed checksum value = 07\n\n4. SUPPORTER: Assembles the master sequence in strict order:\n   Assemble: THINKER_CODE (1 char) + CODER_CODE (1 char) + DEBUGGER_CODE (2 chars) + CONTROL_SALT \"42\"\n   Resulting in the 6-character Master Unlock Sequence: \"390742\"\n\nSolve the four role challenges on your team sheet and combine them to generate the 6-character Final Master Unlock Code.",
+        "inputDescription": "Full Team Cryptographic Matrix on organizer terminal / problem sheet.",
+        "outputDescription": "Master 6-character unlock code.",
+        "constraints": [
+          "Strict role collaboration required",
+          "One master attempt submission"
+        ]
+      },
+      "expectedAnswer": "390742",
+      "active": true
+    }
+  ],
+  "submissions": [
+    {
+      "id": "sub_1791392521407",
+      "teamId": "team_1791392014208",
+      "round": 1,
+      "answer": "247108356219",
+      "correct": false,
+      "submittedAt": "2026-10-07T17:02:01.407Z"
+    },
+    {
+      "id": "sub_1791392669636",
+      "teamId": "team_1791392014208",
+      "round": 1,
+      "answer": "421873298456",
+      "correct": true,
+      "submittedAt": "2026-10-07T17:04:29.636Z"
+    },
+    {
+      "id": "sub_1791392726586",
+      "teamId": "team_1791392014208",
+      "round": 2,
+      "answer": "419832",
+      "correct": true,
+      "submittedAt": "2026-10-07T17:05:26.586Z"
+    },
+    {
+      "id": "sub_1791392783867",
+      "teamId": "team_1791392014208",
+      "round": 3,
+      "answer": "390742",
+      "correct": true,
+      "submittedAt": "2026-10-07T17:06:23.867Z"
+    }
+  ],
+  "roundCompletions": [
+    {
+      "id": "rc_1791392669636",
+      "teamId": "team_1791392014208",
+      "round": 1,
+      "completedAt": "2026-10-07T17:04:29.636Z",
+      "elapsedTimeMs": 341738
+    },
+    {
+      "id": "rc_1791392726587",
+      "teamId": "team_1791392014208",
+      "round": 2,
+      "completedAt": "2026-10-07T17:05:26.586Z",
+      "elapsedTimeMs": 398688
+    },
+    {
+      "id": "rc_1791392783868",
+      "teamId": "team_1791392014208",
+      "round": 3,
+      "completedAt": "2026-10-07T17:06:23.867Z",
+      "elapsedTimeMs": 455969
+    }
+  ]
+}

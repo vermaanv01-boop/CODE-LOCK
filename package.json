@@ -1,0 +1,12 @@
+{
+  "name": "code-lock-event-platform",
+  "version": "1.0.0",
+  "description": "CODE//LOCK - Offline-First Team Coding, Debugging & Logic Contest Platform",
+  "scripts": {
+    "dev:backend": "npm.cmd --prefix backend run dev",
+    "dev:frontend": "npm.cmd --prefix frontend run dev",
+    "build": "npm.cmd --prefix backend run build && npm.cmd --prefix frontend run build",
+    "start:backend": "npm.cmd --prefix backend start",
+    "start:frontend": "npm.cmd --prefix frontend start"
+  }
+}
