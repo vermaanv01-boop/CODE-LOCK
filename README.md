@@ -1,109 +1,85 @@
-# CODE//LOCK (C//L 2026)
+# CODE//LOCK
 
 > **THINK. CODE. UNLOCK. DEBUG.**  
-> Offline-First Full-Stack Team Coding, Debugging & Logic Contest Platform
+> Offline-First Full-Stack Team Coding, Debugging & Logic Contest Platform for Closed LAN Environments.
 
 ---
 
-## 🚀 Quick Start (One-Click Launchers)
+## Stack
 
-For Windows machines, you can launch the complete system (both Express backend and Next.js frontend) with a single click:
-
-### Option A: PowerShell
-Right-click and run with PowerShell or in terminal:
-```powershell
-.\start-codelock.ps1
-```
-
-### Option B: Batch File
-Double-click `start-codelock.bat` or run in Command Prompt:
-```cmd
-start-codelock.bat
-```
+* **Next.js** (App Router, Server & Client Components)
+* **TypeScript** (Strict type definitions shared across client and server)
+* **Tailwind CSS** (Token-driven CSS variables for Industrial Dark & Light modes)
+* **Express** (Authoritative REST API, server clock authority, route guards)
+* **MongoDB** (Database persistence via Mongoose)
+* **Mongoose** (Data models for teams, contest state, questions, submissions, round completions)
+* **Monaco Editor** (Embedded scratchpad with dynamic lazy-loading and fallback support)
 
 ---
 
-## 🛠️ Manual Start (Command Line)
+## Local Setup
 
-If you prefer starting services manually or on separate terminals:
-
-### 1. Prerequisites
-- **Node.js** (v18.0.0 or higher)
-- **npm** (comes with Node.js)
-- *(Optional)* **MongoDB** (If MongoDB is running locally on port 27017, Mongoose connects automatically. If MongoDB is not installed or offline, the platform automatically runs in resilient embedded database mode with zero configuration!)
-
-### 2. Start the Backend (Express API)
-In a terminal, run:
-```bash
-cd backend
-npm run dev
-```
-- **Backend URL**: `http://localhost:5000`
-- **Network LAN URL**: `http://0.0.0.0:5000`
-- **Health Check**: `http://localhost:5000/api/health`
-
-### 3. Start the Frontend (Next.js App)
-In a separate terminal, run:
+### 1. Frontend Setup
 ```bash
 cd frontend
+npm install
 npm run dev
 ```
-*(Or for production mode: `npm run build && npm run start`)*
-- **Frontend URL**: `http://localhost:3000`
-- **Network LAN URL**: `http://0.0.0.0:3000`
+The frontend starts on `http://localhost:3000` (and `http://0.0.0.0:3000` for LAN access).
+
+### 2. Backend Setup
+```bash
+cd backend
+npm install
+npm run dev
+```
+The Express backend starts on `http://localhost:5000` (and `http://0.0.0.0:5000` for LAN access).
+
+### 3. MongoDB Configuration
+Create a `.env` file inside the `backend` directory:
+```env
+MONGODB_URI=your_mongodb_connection_string
+PORT=5000
+```
+> **IMPORTANT SECURITY**:  
+> The real MongoDB connection string must be placed in `backend/.env` and **MUST NOT** be committed to version control. Both `.env` and `.env.local` are excluded via `.gitignore`. If MongoDB is unreachable or running offline, the backend automatically transitions to embedded resilient fallback mode so event continuity is never interrupted.
 
 ---
 
-## 🔑 Key Access Points & Credentials
+## Admin Login
 
-| Role / Feature | Route | Credentials / Details |
-|---|---|---|
-| **Contest Homepage** | `http://localhost:3000/` | Public landing, guidelines, team station login |
-| **Team Registration** | `http://localhost:3000/register` | Official paper-style squad registration |
-| **Team Contest Station** | `http://localhost:3000/contest` | Route-guarded challenge hub |
-| **Live Scoreboard** | `http://localhost:3000/leaderboard` | Real-time server-ordered scoreboard |
-| **Organizer Control Room** | `http://localhost:3000/admin` | Contest status, team stats, `[ START CONTEST ]` |
-| **Admin Login** | `http://localhost:3000/admin/login` | **Username:** `admin`<br>**Password:** `admin123` |
-| **Teams Roster** | `http://localhost:3000/admin/teams` | Directory of enrolled squads and member roles |
-| **Admin Scoreboard** | `http://localhost:3000/admin/leaderboard` | Live supervisory rankings & split times |
+Organizers manage the contest via the **Central Command Control Room** at:
+`http://localhost:3000/admin`
+
+### Configuration & Identifiers
+* **Configured Admin Username:** `admin`
+* **Configured Login Secret Placeholder:**
+  ```env
+  ADMIN_USERNAME=admin
+  ADMIN_PASSWORD=...
+  ```
+* **Where Configured:** Organizers configure administrator credentials in the backend data store seeding logic (`backend/src/services/store.ts` or via environment variables). Default development initialization seeds the `admin` operator account.
 
 ---
 
-## 🌐 Local Event LAN Setup (Wi-Fi / Ethernet)
+## Offline Event Mode (Closed LAN Setup)
 
-To run the competition on a closed local network without internet:
+To execute a competition in a closed room, auditorium, or lab without external internet:
 
-1. Connect the organizer's machine and participant laptops to the same Wi-Fi router or network switch.
-2. Find the organizer laptop's local IPv4 address (e.g., in PowerShell: `ipconfig`). Example: `192.168.1.45`.
-3. Participants open their web browsers and navigate to:
+1. **Run MongoDB locally** (or utilize the automatic embedded offline storage mode).
+2. **Start Express backend** (`cd backend && npm run dev`).
+3. **Start Next.js frontend** (`cd frontend && npm run dev`).
+4. **Connect organizer machine and participant laptops to the same private LAN/Wi-Fi switch.**
+5. **Participants access the organizer's local IP** in their browsers:
    ```
-   http://192.168.1.45:3000
+   http://<ORGANIZER-LAN-IP>:3000
    ```
-4. The frontend automatically routes API calls to the organizer machine's Express server on port 5000.
-5. All timers, assets, fonts, and validation logic run 100% locally with zero cloud or WAN dependencies.
+6. **Internet is not required.** All fonts, dependencies, timers, and submission validation run entirely locally over the private network.
 
 ---
 
-## 📋 Competition Workflow for Organizers
+## Security Architecture
 
-1. **Register Teams**: Direct participants to `/register` before the contest begins. Assign each team a unique identifier (e.g., `T-001`, `T-027`).
-2. **Start Contest**: Log into `/admin` and click **`[ START CONTEST ]`**.
-   - Registration immediately **locks** against new entries.
-   - The global official server timer activates.
-   - Round 01 unlocks across all participant workstations simultaneously.
-3. **Monitor Live Progress**: Keep `/admin/leaderboard` open to track live splits and rank updates.
-
----
-
-## 🔐 Official Gate Solution Reference (Organizer Confidential)
-
-- **Round 01 (Coding Lock — 12 Digits)**:  
-  `421873298456` *(Q1=42, Q2=18, Q3=73, Q4=29, Q5=84, Q6=56)*
-- **Round 02 (Debugging Lock — 6 Digits)**:  
-  `419832` *(Task 1=419, Task 2=832)*
-- **Round 03 (The Final Lock — Master Cipher)**:  
-  `390742` *(Thinker=3, Coder=9, Debugger=07, Salt=42)*
-
----
-
-For in-depth operational architecture, see [ORGANIZER_GUIDE.md](file:///c:/Users/Lenovo/OneDrive/Desktop/CODE@@LOCK/ORGANIZER_GUIDE.md).
+* **Server Authoritative:** Client timers, ranks, and stage progression are never trusted. The Express server independently tracks elapsed milliseconds from `contestStartTime`.
+* **Zero Secret Exposure:** Expected answer codes, secret keys, admin credentials, and database URIs are never transmitted to client browsers or exposed in public routes.
+* **Progressive Route Guards:** Teams cannot access Round 2 without officially completing and unlocking Round 1 on the server.

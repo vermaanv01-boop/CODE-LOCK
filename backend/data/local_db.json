@@ -35,15 +35,29 @@
       "coder": "Tanush patel",
       "debugger": "Ayush Dubey",
       "supporter": "Anusha Sharma",
-      "currentRound": 3,
-      "status": "FINISHED",
+      "currentRound": 1,
+      "status": "IN_ROUND_1",
       "registeredAt": "2026-10-07T16:53:34.208Z"
+    },
+    {
+      "id": "team_1791563798807_rpwpg",
+      "_id": "team_1791563798807",
+      "teamNumber": "T-02",
+      "teamName": "team tlux",
+      "teamLeader": "Anushka sharma",
+      "thinker": "vamika",
+      "coder": "akkay",
+      "debugger": "pratiksha",
+      "supporter": "prapti",
+      "currentRound": 1,
+      "status": "IN_ROUND_1",
+      "registeredAt": "2026-10-09T16:36:38.807Z"
     }
   ],
   "contest": {
     "id": "contest_main",
     "status": "ACTIVE",
-    "contestStartTime": "2026-10-07T16:58:47.898Z",
+    "contestStartTime": "2026-10-09T16:37:14.373Z",
     "contestEndTime": null,
     "round1Status": "ACTIVE",
     "round2Status": "LOCKED",
@@ -253,61 +267,6 @@
       "active": true
     }
   ],
-  "submissions": [
-    {
-      "id": "sub_1791392521407",
-      "teamId": "team_1791392014208",
-      "round": 1,
-      "answer": "247108356219",
-      "correct": false,
-      "submittedAt": "2026-10-07T17:02:01.407Z"
-    },
-    {
-      "id": "sub_1791392669636",
-      "teamId": "team_1791392014208",
-      "round": 1,
-      "answer": "421873298456",
-      "correct": true,
-      "submittedAt": "2026-10-07T17:04:29.636Z"
-    },
-    {
-      "id": "sub_1791392726586",
-      "teamId": "team_1791392014208",
-      "round": 2,
-      "answer": "419832",
-      "correct": true,
-      "submittedAt": "2026-10-07T17:05:26.586Z"
-    },
-    {
-      "id": "sub_1791392783867",
-      "teamId": "team_1791392014208",
-      "round": 3,
-      "answer": "390742",
-      "correct": true,
-      "submittedAt": "2026-10-07T17:06:23.867Z"
-    }
-  ],
-  "roundCompletions": [
-    {
-      "id": "rc_1791392669636",
-      "teamId": "team_1791392014208",
-      "round": 1,
-      "completedAt": "2026-10-07T17:04:29.636Z",
-      "elapsedTimeMs": 341738
-    },
-    {
-      "id": "rc_1791392726587",
-      "teamId": "team_1791392014208",
-      "round": 2,
-      "completedAt": "2026-10-07T17:05:26.586Z",
-      "elapsedTimeMs": 398688
-    },
-    {
-      "id": "rc_1791392783868",
-      "teamId": "team_1791392014208",
-      "round": 3,
-      "completedAt": "2026-10-07T17:06:23.867Z",
-      "elapsedTimeMs": 455969
-    }
-  ]
+  "submissions": [],
+  "roundCompletions": []
 }
