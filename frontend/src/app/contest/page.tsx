@@ -32,14 +32,12 @@ export default function ContestHubPage() {
 
       const localTeam = storage.getTeam();
       if (localTeam?.teamNumber) {
-        // Sync latest team data from backend
         try {
           const tRes = await apiRequest(`/teams/${localTeam.teamNumber}`);
           if (tRes?.team) {
             storage.setTeam(tRes.team);
             setTeam(tRes.team);
 
-            // If contest is active, auto-navigate to their appropriate round/dashboard
             if (cRes.status === 'ACTIVE') {
               if (tRes.team.status === 'ROUND_1_COMPLETE') {
                 router.push('/round/1/dashboard');
@@ -104,7 +102,7 @@ export default function ContestHubPage() {
 
   if (loading) {
     return (
-      <div className="py-20 text-center font-mono text-xs text-muted-text">
+      <div className="py-24 text-center font-mono text-xs text-muted-text">
         [INITIALIZING CONTEST GATEWAY ROUTE GUARD...]
       </div>
     );
@@ -113,9 +111,9 @@ export default function ContestHubPage() {
   // If not logged in, ask for team number
   if (!team) {
     return (
-      <div className="max-w-md mx-auto my-12 border border-border bg-surface p-6 sm:p-8 font-mono select-none space-y-6">
+      <div className="max-w-md mx-auto my-12 border border-border bg-surface p-6 sm:p-8 font-mono select-none space-y-6 shadow-sm">
         <div className="border-b border-border pb-4">
-          <div className="text-[10px] text-muted-text uppercase tracking-widest">STATION AUTHENTICATION</div>
+          <div className="text-[10px] text-muted-text uppercase tracking-widest font-semibold">STATION AUTHENTICATION</div>
           <h2 className="text-2xl font-bold text-primary-text mt-1">CONNECT SQUAD</h2>
         </div>
 
@@ -127,7 +125,7 @@ export default function ContestHubPage() {
               value={teamInput}
               onChange={(e) => setTeamInput(e.target.value.toUpperCase())}
               placeholder="e.g. T-027"
-              className="w-full bg-[#11110F] border border-border p-3 text-sm font-mono text-primary-text uppercase placeholder:text-muted-text/40 focus:outline-none focus:border-primary-accent"
+              className="w-full bg-background border border-border p-3 text-sm font-mono text-primary-text uppercase placeholder:text-muted-text/40 focus:outline-none focus:border-primary-accent"
               autoFocus
             />
           </div>
@@ -141,16 +139,16 @@ export default function ContestHubPage() {
 
           <button
             type="submit"
-            className="w-full py-3 bg-primary-accent text-background font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 hover:opacity-90"
+            className="w-full py-3 bg-primary-accent text-primary-accent-contrast font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
           >
             <span>ACCESS CONTEST CONSOLE</span>
             <ArrowRight className="w-4 h-4" />
           </button>
         </form>
 
-        <div className="pt-2 border-t border-border/60 text-xs text-muted-text flex justify-between">
+        <div className="pt-2 border-t border-border text-xs text-muted-text flex justify-between">
           <span>Need registration?</span>
-          <Link href="/register" className="text-primary-accent hover:underline">
+          <Link href="/register" className="text-primary-accent hover:underline font-semibold">
             Registration Sheet →
           </Link>
         </div>
@@ -161,13 +159,13 @@ export default function ContestHubPage() {
   // If contest is NOT_STARTED, show STANDBY screen
   if (contest?.status === 'NOT_STARTED') {
     return (
-      <div className="max-w-2xl mx-auto my-8 border border-border bg-surface p-6 sm:p-10 font-mono select-none space-y-6 text-center">
-        <div className="inline-flex items-center gap-2 px-3 py-1 bg-surface-highlight border border-border text-xs text-warning uppercase">
+      <div className="max-w-2xl mx-auto my-8 border border-border bg-surface p-6 sm:p-10 font-mono select-none space-y-6 text-center shadow-sm">
+        <div className="inline-flex items-center gap-2 px-3 py-1 bg-surface-dark border border-border text-xs text-warning uppercase">
           <Radio className="w-3.5 h-3.5 animate-pulse text-warning" />
           <span>STANDBY MODE / SYNCHRONIZING WITH ORGANIZER</span>
         </div>
 
-        <h1 className="text-3xl sm:text-4xl font-bold text-primary-text tracking-tight">
+        <h1 className="text-3xl sm:text-4xl font-bold text-primary-text tracking-tight uppercase">
           CONTEST NOT STARTED
         </h1>
 
@@ -177,7 +175,7 @@ export default function ContestHubPage() {
         </p>
 
         {/* Squad Card */}
-        <div className="bg-[#11110F] border border-border p-4 text-left space-y-3">
+        <div className="bg-background border border-border p-4 text-left space-y-3">
           <div className="flex justify-between items-center border-b border-border/60 pb-2">
             <div>
               <span className="text-[10px] text-muted-text uppercase">ASSIGNED TERMINAL</span>
@@ -191,25 +189,25 @@ export default function ContestHubPage() {
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] pt-1">
             <div>
-              <div className="text-muted-text text-[9px] uppercase">THINKER</div>
+              <div className="text-muted-text text-[9px] uppercase font-bold">THINKER</div>
               <div className="truncate font-sans">{team.thinker}</div>
             </div>
             <div>
-              <div className="text-muted-text text-[9px] uppercase">CODER</div>
+              <div className="text-muted-text text-[9px] uppercase font-bold">CODER</div>
               <div className="truncate font-sans">{team.coder}</div>
             </div>
             <div>
-              <div className="text-muted-text text-[9px] uppercase">DEBUGGER</div>
+              <div className="text-muted-text text-[9px] uppercase font-bold">DEBUGGER</div>
               <div className="truncate font-sans">{team.debugger}</div>
             </div>
             <div>
-              <div className="text-muted-text text-[9px] uppercase">SUPPORTER</div>
+              <div className="text-muted-text text-[9px] uppercase font-bold">SUPPORTER</div>
               <div className="truncate font-sans">{team.supporter}</div>
             </div>
           </div>
         </div>
 
-        <div className="p-3 border border-border bg-[#141412] text-xs text-muted-text flex items-center justify-center gap-2">
+        <div className="p-3 border border-border bg-surface-dark text-xs text-muted-text flex items-center justify-center gap-2">
           <Clock className="w-4 h-4 text-primary-accent" />
           <span>LISTENING ON LOCAL NETWORK FOR SERVER START SIGNAL...</span>
         </div>
@@ -219,18 +217,18 @@ export default function ContestHubPage() {
 
   // If contest is ACTIVE or COMPLETED, provide direct navigation button according to their progress
   return (
-    <div className="max-w-xl mx-auto my-8 border border-border bg-surface p-8 font-mono select-none space-y-6">
+    <div className="max-w-xl mx-auto my-8 border border-border bg-surface p-6 sm:p-8 font-mono select-none space-y-6 shadow-sm">
       <div className="flex items-center justify-between border-b border-border pb-4">
         <div>
           <div className="text-[10px] text-muted-text uppercase">SQUAD POSITION</div>
           <h2 className="text-xl font-bold text-primary-text mt-0.5">{team.teamNumber} — {team.teamName}</h2>
         </div>
-        <span className="px-2 py-0.5 bg-primary-accent text-background text-xs font-bold uppercase">
+        <span className="px-2 py-0.5 bg-primary-accent text-primary-accent-contrast text-xs font-bold uppercase">
           LIVE
         </span>
       </div>
 
-      <div className="p-4 bg-[#11110F] border border-border space-y-2 text-xs">
+      <div className="p-4 bg-background border border-border space-y-2 text-xs">
         <div className="flex justify-between">
           <span className="text-muted-text">CURRENT STAGE:</span>
           <span className="text-primary-accent font-bold">ROUND 0{team.currentRound}</span>
@@ -248,7 +246,7 @@ export default function ContestHubPage() {
           else if (team.status === 'FINISHED') router.push('/round/3/dashboard');
           else router.push(`/round/${team.currentRound}`);
         }}
-        className="w-full py-3 bg-primary-accent text-background font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 hover:opacity-90"
+        className="w-full py-3 bg-primary-accent text-primary-accent-contrast font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
       >
         <span>ENTER ROUND 0{team.currentRound} CONSOLE</span>
         <ArrowRight className="w-4 h-4" />

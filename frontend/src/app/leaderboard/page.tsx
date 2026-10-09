@@ -45,17 +45,17 @@ export default function PublicLeaderboardPage() {
   return (
     <div className="space-y-6 select-none font-mono">
       {/* Header bar */}
-      <div className="border border-border bg-surface p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="border border-border bg-surface p-5 sm:p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm">
         <div>
           <div className="flex items-center gap-2 text-[10px] text-muted-text uppercase tracking-widest mb-1">
             <Trophy className="w-3.5 h-3.5 text-primary-accent" />
             <span>OFFICIAL CONTEST SCOREBOARD</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-primary-text tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-bold text-primary-text tracking-tight uppercase">
             CODE//LOCK SCOREBOARD
           </h1>
           <div className="text-xs text-muted-text mt-1">
-            STATUS: <span className="text-primary-accent font-bold">{contestStatus}</span> • SYNCHRONIZED ACROSS LAN
+            STATUS: <span className="text-primary-accent font-bold uppercase">{contestStatus}</span> • SYNCHRONIZED ACROSS LAN
           </div>
         </div>
 
@@ -67,13 +67,13 @@ export default function PublicLeaderboardPage() {
               value={filterQuery}
               onChange={(e) => setFilterQuery(e.target.value)}
               placeholder="Search team number or name..."
-              className="bg-[#11110F] border border-border pl-8 pr-3 py-2 text-xs font-mono text-primary-text placeholder:text-muted-text/50 focus:outline-none focus:border-primary-accent w-56 sm:w-64"
+              className="bg-background border border-border pl-8 pr-3 py-2 text-xs font-mono text-primary-text placeholder:text-muted-text/50 focus:outline-none focus:border-primary-accent w-56 sm:w-64"
             />
           </div>
 
           <button
             onClick={fetchScoreboard}
-            className="p-2 border border-border hover:border-primary-accent text-muted-text hover:text-primary-accent transition-colors flex items-center gap-1.5 text-xs"
+            className="p-2 border border-border hover:border-primary-accent text-muted-text hover:text-primary-accent transition-colors flex items-center gap-1.5 text-xs bg-surface"
             title="Refresh now"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
@@ -84,25 +84,25 @@ export default function PublicLeaderboardPage() {
 
       {/* Summary Micro Bar */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-        <div className="p-3 bg-surface border border-border flex justify-between items-center">
-          <span className="text-muted-text text-[10px] uppercase">TOTAL SQUADS:</span>
-          <span className="font-bold text-primary-text">{leaderboard.length}</span>
+        <div className="p-3 bg-surface border border-border flex justify-between items-center shadow-sm">
+          <span className="text-muted-text text-[10px] uppercase font-semibold">TOTAL SQUADS:</span>
+          <span className="font-bold text-primary-text text-sm">{leaderboard.length}</span>
         </div>
-        <div className="p-3 bg-surface border border-border flex justify-between items-center">
-          <span className="text-muted-text text-[10px] uppercase">COMPLETED ALL ROUNDS:</span>
-          <span className="font-bold text-primary-accent">
+        <div className="p-3 bg-surface border border-border flex justify-between items-center shadow-sm">
+          <span className="text-muted-text text-[10px] uppercase font-semibold">FINISHED:</span>
+          <span className="font-bold text-primary-accent text-sm">
             {leaderboard.filter(e => e.status === 'FINISHED').length}
           </span>
         </div>
-        <div className="p-3 bg-surface border border-border flex justify-between items-center">
-          <span className="text-muted-text text-[10px] uppercase">IN GATE 02 OR 03:</span>
-          <span className="font-bold text-warning">
+        <div className="p-3 bg-surface border border-border flex justify-between items-center shadow-sm">
+          <span className="text-muted-text text-[10px] uppercase font-semibold">STAGE 02 / 03:</span>
+          <span className="font-bold text-warning text-sm">
             {leaderboard.filter(e => e.currentRound > 1).length}
           </span>
         </div>
-        <div className="p-3 bg-surface border border-border flex justify-between items-center">
-          <span className="text-muted-text text-[10px] uppercase">IN GATE 01:</span>
-          <span className="font-bold text-primary-text">
+        <div className="p-3 bg-surface border border-border flex justify-between items-center shadow-sm">
+          <span className="text-muted-text text-[10px] uppercase font-semibold">STAGE 01:</span>
+          <span className="font-bold text-primary-text text-sm">
             {leaderboard.filter(e => e.currentRound === 1 && e.status !== 'FINISHED').length}
           </span>
         </div>

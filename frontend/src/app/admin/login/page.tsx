@@ -48,17 +48,17 @@ export default function AdminLoginPage() {
 
   return (
     <div className="max-w-md mx-auto my-14 select-none font-mono">
-      <div className="border border-border bg-surface p-8 space-y-6">
+      <div className="border border-border bg-surface p-6 sm:p-8 space-y-6 shadow-sm">
         <div className="border-b border-border pb-4 flex items-center justify-between">
           <div>
-            <div className="flex items-center gap-2 text-[10px] text-muted-text uppercase tracking-widest">
+            <div className="flex items-center gap-2 text-[10px] text-muted-text uppercase tracking-widest font-semibold">
               <Shield className="w-3.5 h-3.5 text-primary-accent" />
               <span>ORGANIZER CONSOLE</span>
             </div>
             <h1 className="text-2xl font-bold text-primary-text mt-1">ADMIN LOGIN</h1>
           </div>
-          <span className="text-[10px] text-primary-accent border border-primary-accent/40 px-2 py-0.5">
-            AUTHORIZED ONLY
+          <span className="text-[10px] text-primary-accent border border-primary-accent/40 px-2 py-0.5 bg-primary-accent/10">
+            AUTHORIZED
           </span>
         </div>
 
@@ -68,7 +68,7 @@ export default function AdminLoginPage() {
 
         <form onSubmit={handleLogin} className="space-y-4">
           <div className="space-y-1">
-            <label className="text-[11px] uppercase tracking-wider text-muted-text block">
+            <label className="text-[11px] uppercase tracking-wider text-muted-text block font-semibold">
               OPERATOR USERNAME
             </label>
             <input
@@ -77,12 +77,12 @@ export default function AdminLoginPage() {
               onChange={(e) => setUsername(e.target.value)}
               placeholder="e.g. admin"
               required
-              className="w-full bg-[#11110F] border border-border p-2.5 text-sm font-mono text-primary-text focus:outline-none focus:border-primary-accent"
+              className="w-full bg-background border border-border p-2.5 text-sm font-mono text-primary-text focus:outline-none focus:border-primary-accent"
             />
           </div>
 
           <div className="space-y-1">
-            <label className="text-[11px] uppercase tracking-wider text-muted-text block">
+            <label className="text-[11px] uppercase tracking-wider text-muted-text block font-semibold">
               AUTHORIZATION SECRET
             </label>
             <input
@@ -91,7 +91,7 @@ export default function AdminLoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••••••"
               required
-              className="w-full bg-[#11110F] border border-border p-2.5 text-sm font-mono text-primary-text focus:outline-none focus:border-primary-accent"
+              className="w-full bg-background border border-border p-2.5 text-sm font-mono text-primary-text focus:outline-none focus:border-primary-accent"
             />
           </div>
 
@@ -105,7 +105,7 @@ export default function AdminLoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 bg-primary-accent text-background font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 hover:opacity-90 disabled:opacity-50"
+            className="w-full py-3 bg-primary-accent text-primary-accent-contrast font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 hover:opacity-90 disabled:opacity-50 transition-opacity"
           >
             {loading ? 'AUTHENTICATING ON SERVER...' : 'ACCESS CONTROL ROOM'}
             <ArrowRight className="w-4 h-4" />
@@ -114,15 +114,15 @@ export default function AdminLoginPage() {
 
         <div className="pt-3 border-t border-border flex flex-col gap-2">
           <div className="flex items-center justify-between text-[11px] text-muted-text">
-            <span>Default credentials:</span>
+            <span>Default configured operator:</span>
             <span className="text-primary-text font-mono font-bold">admin / admin123</span>
           </div>
           <button
             type="button"
             onClick={handleAutofill}
-            className="w-full py-1.5 px-2 border border-border hover:border-primary-accent text-[11px] text-primary-accent hover:bg-primary-accent/10 transition-colors uppercase"
+            className="w-full py-1.5 px-2 border border-border hover:border-primary-accent text-[11px] text-primary-accent hover:bg-primary-accent/10 transition-colors uppercase font-semibold"
           >
-            [ CLICK TO AUTO-FILL DEFAULT CREDENTIALS ]
+            [ AUTO-FILL DEFAULT CREDENTIALS ]
           </button>
         </div>
       </div>

@@ -39,7 +39,7 @@ export default function AdminLeaderboardPage() {
   return (
     <div className="space-y-6 select-none font-mono">
       {/* Header bar */}
-      <div className="border border-border bg-surface p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="border border-border bg-surface p-5 sm:p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm">
         <div>
           <div className="flex items-center gap-2 text-[10px] text-muted-text uppercase tracking-widest mb-1">
             <Link href="/admin" className="text-primary-accent hover:underline flex items-center gap-1">
@@ -49,17 +49,17 @@ export default function AdminLeaderboardPage() {
             <span>/</span>
             <span>SUPERVISORY SCOREBOARD</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-primary-text tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-bold text-primary-text tracking-tight uppercase">
             ADMIN LIVE SCOREBOARD
           </h1>
           <div className="text-xs text-muted-text mt-1">
-            CONTEST STATUS: <span className="text-primary-accent font-bold">{data?.contest?.status || 'ACTIVE'}</span>
+            CONTEST STATUS: <span className="text-primary-accent font-bold uppercase">{data?.contest?.status || 'ACTIVE'}</span>
           </div>
         </div>
 
         <button
           onClick={fetchScoreboard}
-          className="p-2 border border-border hover:border-primary-accent text-primary-accent text-xs flex items-center gap-1.5"
+          className="p-2 border border-border hover:border-primary-accent text-primary-accent text-xs flex items-center gap-1.5 bg-background transition-colors"
         >
           <RefreshCw className="w-3.5 h-3.5" />
           <span>POLL SCOREBOARD</span>

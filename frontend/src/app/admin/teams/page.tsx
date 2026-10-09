@@ -47,7 +47,7 @@ export default function AdminTeamsPage() {
   return (
     <div className="space-y-6 select-none font-mono">
       {/* Header bar */}
-      <div className="border border-border bg-surface p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="border border-border bg-surface p-5 sm:p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm">
         <div>
           <div className="flex items-center gap-2 text-[10px] text-muted-text uppercase tracking-widest mb-1">
             <Link href="/admin" className="text-primary-accent hover:underline flex items-center gap-1">
@@ -57,7 +57,7 @@ export default function AdminTeamsPage() {
             <span>/</span>
             <span>ROSTER</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-primary-text tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-bold text-primary-text tracking-tight uppercase">
             REGISTERED TEAMS DIRECTORY
           </h1>
           <div className="text-xs text-muted-text mt-1">
@@ -73,13 +73,13 @@ export default function AdminTeamsPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search team number or name..."
-              className="bg-[#11110F] border border-border pl-8 pr-3 py-2 text-xs font-mono text-primary-text placeholder:text-muted-text/50 focus:outline-none focus:border-primary-accent w-64"
+              className="bg-background border border-border pl-8 pr-3 py-2 text-xs font-mono text-primary-text placeholder:text-muted-text/50 focus:outline-none focus:border-primary-accent w-64"
             />
           </div>
 
           <button
             onClick={fetchTeams}
-            className="p-2 border border-border hover:border-primary-accent text-muted-text hover:text-primary-accent text-xs flex items-center gap-1"
+            className="p-2 border border-border hover:border-primary-accent text-muted-text hover:text-primary-accent text-xs flex items-center gap-1 bg-surface"
           >
             <RefreshCw className="w-3.5 h-3.5" />
           </button>
@@ -87,10 +87,10 @@ export default function AdminTeamsPage() {
       </div>
 
       {/* Teams Table */}
-      <div className="border border-border bg-surface overflow-x-auto">
-        <table className="w-full text-left border-collapse text-xs">
+      <div className="border border-border bg-surface overflow-x-auto shadow-sm">
+        <table className="w-full text-left border-collapse text-xs min-w-[700px]">
           <thead>
-            <tr className="border-b border-border bg-[#141412] text-muted-text text-[11px] uppercase tracking-wider">
+            <tr className="border-b border-border bg-surface-dark text-muted-text text-[11px] uppercase tracking-wider">
               <th className="py-2.5 px-3 border-r border-border w-24">TEAM NO.</th>
               <th className="py-2.5 px-4 border-r border-border">TEAM NAME</th>
               <th className="py-2.5 px-3 border-r border-border">LEADER</th>
@@ -98,7 +98,7 @@ export default function AdminTeamsPage() {
               <th className="py-2.5 px-3 border-r border-border">CODER</th>
               <th className="py-2.5 px-3 border-r border-border">DEBUGGER</th>
               <th className="py-2.5 px-3 border-r border-border">SUPPORTER</th>
-              <th className="py-2.5 px-3 border-r border-border text-center w-24">ROUND</th>
+              <th className="py-2.5 px-3 border-r border-border text-center w-24">STAGE</th>
               <th className="py-2.5 px-3 text-center w-32">STATUS</th>
             </tr>
           </thead>
@@ -111,7 +111,7 @@ export default function AdminTeamsPage() {
               </tr>
             ) : (
               filtered.map((t) => (
-                <tr key={t.id} className="border-b border-border/60 hover:bg-surface-highlight">
+                <tr key={t.id} className="border-b border-border/70 hover:bg-surface-highlight transition-colors">
                   <td className="py-2.5 px-3 border-r border-border/60 font-bold text-primary-accent">
                     {t.teamNumber}
                   </td>
@@ -134,15 +134,15 @@ export default function AdminTeamsPage() {
                     {t.supporter}
                   </td>
                   <td className="py-2.5 px-3 border-r border-border/60 text-center">
-                    <span className="px-1.5 py-0.5 border border-border text-[10px] bg-[#11110F]">
-                      R0{t.currentRound}
+                    <span className="px-1.5 py-0.5 border border-border text-[10px] bg-background">
+                      ROUND 0{t.currentRound}
                     </span>
                   </td>
                   <td className="py-2.5 px-3 text-center">
                     <span
                       className={`px-1.5 py-0.5 text-[10px] font-bold uppercase ${
                         t.status === 'FINISHED'
-                          ? 'bg-primary-accent text-background'
+                          ? 'bg-primary-accent text-primary-accent-contrast'
                           : t.status.startsWith('IN_')
                           ? 'text-primary-accent border border-primary-accent'
                           : 'text-muted-text border border-border'

@@ -30,7 +30,6 @@ export default function Round3DashboardPage() {
         const comp3 = await getRoundCompletion(3, currentTeam.teamNumber);
         setR3(comp3);
       } catch (err) {
-        // Round 3 not complete yet
         router.push('/round/3');
         return;
       }
@@ -60,7 +59,7 @@ export default function Round3DashboardPage() {
 
   if (loading) {
     return (
-      <div className="py-20 text-center font-mono text-xs text-muted-text">
+      <div className="py-24 text-center font-mono text-xs text-muted-text">
         [GENERATING OFFICIAL FINAL COMPETITION CERTIFICATE & DOSSIER...]
       </div>
     );
@@ -68,7 +67,6 @@ export default function Round3DashboardPage() {
 
   // Find leaderboard row for official splits
   const row = leaderboard.find(e => e.teamNumber === team?.teamNumber);
-
   const r1Time = r1?.formattedCompletionTime || row?.formattedRound1Time || '--:--';
 
   let r2Split = row?.formattedRound2Time || '--:--';
@@ -89,13 +87,13 @@ export default function Round3DashboardPage() {
   const finalRank = row ? row.rank : (r3?.currentPosition || 1);
 
   return (
-    <div className="space-y-8 select-none font-mono">
+    <div className="space-y-6 select-none font-mono">
       {/* Grand Completion Certificate Banner */}
-      <div className="border-2 border-primary-accent bg-[#151512] p-6 sm:p-12 relative overflow-hidden shadow-2xl">
-        <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 pb-8 border-b-2 border-border">
-          <div className="space-y-3">
+      <div className="border-2 border-primary-accent bg-surface p-6 sm:p-10 relative overflow-hidden shadow-md">
+        <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 pb-6 border-b-2 border-border">
+          <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <span className="text-[10px] text-background bg-primary-accent font-bold tracking-widest uppercase px-2.5 py-0.5">
+              <span className="text-[10px] text-primary-accent-contrast bg-primary-accent font-bold tracking-widest uppercase px-2.5 py-0.5">
                 OFFICIAL CONTEST RECORD
               </span>
               <span className="text-xs text-muted-text">
@@ -103,20 +101,20 @@ export default function Round3DashboardPage() {
               </span>
             </div>
 
-            <h1 className="text-3xl sm:text-6xl font-bold tracking-tight text-primary-text leading-none">
+            <h1 className="text-3xl sm:text-5xl font-bold tracking-tight text-primary-text leading-none uppercase">
               CODE//LOCK
             </h1>
 
-            <div className="text-lg sm:text-xl font-bold text-primary-accent tracking-widest uppercase">
+            <div className="text-base sm:text-lg font-bold text-primary-accent tracking-widest uppercase">
               CHALLENGE COMPLETE
             </div>
 
             <p className="text-xs sm:text-sm text-muted-text font-sans max-w-xl leading-relaxed">
-              All three cryptographic and logic gates have been officially cracked and verified by the organizer server clock.
+              All three cryptographic and logic gates have been officially unlocked and verified by the organizer server clock.
             </p>
           </div>
 
-          <div className="flex flex-col items-end gap-3">
+          <div className="flex flex-col items-end gap-2">
             <VerifiedStamp label="FINAL VERIFIED ✓" size="lg" />
             <div className="text-[10px] text-muted-text uppercase tracking-wider text-right">
               SHA-256 PARITY VERIFIED
@@ -125,9 +123,9 @@ export default function Round3DashboardPage() {
         </div>
 
         {/* Squad Info & Round Breakdown Matrix */}
-        <div className="grid grid-cols-2 sm:grid-cols-6 gap-4 py-8 border-b border-border">
+        <div className="grid grid-cols-2 sm:grid-cols-6 gap-3 py-6 border-b border-border">
           {/* Team Moniker */}
-          <div className="p-4 bg-[#11110F] border border-border col-span-2">
+          <div className="p-3.5 bg-background border border-border col-span-2">
             <div className="text-[10px] text-muted-text uppercase tracking-wider">OFFICIAL SQUAD</div>
             <div className="text-2xl font-bold text-primary-accent mt-0.5">
               {team?.teamNumber}
@@ -138,28 +136,28 @@ export default function Round3DashboardPage() {
           </div>
 
           {/* Round 01 */}
-          <div className="p-4 bg-[#11110F] border border-border">
+          <div className="p-3.5 bg-background border border-border">
             <div className="text-[10px] text-muted-text uppercase tracking-wider">ROUND 01</div>
             <div className="text-xl font-bold text-primary-text mt-1">{r1Time}</div>
             <div className="text-[9px] text-muted-text mt-1">CODING LOCK</div>
           </div>
 
           {/* Round 02 */}
-          <div className="p-4 bg-[#11110F] border border-border">
+          <div className="p-3.5 bg-background border border-border">
             <div className="text-[10px] text-muted-text uppercase tracking-wider">ROUND 02</div>
             <div className="text-xl font-bold text-warning mt-1">{r2Split}</div>
             <div className="text-[9px] text-muted-text mt-1">DEBUGGING</div>
           </div>
 
           {/* Round 03 */}
-          <div className="p-4 bg-[#11110F] border border-border">
+          <div className="p-3.5 bg-background border border-border">
             <div className="text-[10px] text-muted-text uppercase tracking-wider">ROUND 03</div>
             <div className="text-xl font-bold text-primary-accent mt-1">{r3Split}</div>
             <div className="text-[9px] text-muted-text mt-1">FINAL LOCK</div>
           </div>
 
           {/* Total & Final Rank */}
-          <div className="p-4 bg-[#11110F] border-2 border-primary-accent col-span-2 sm:col-span-1">
+          <div className="p-3.5 bg-surface-dark border-2 border-primary-accent col-span-2 sm:col-span-1">
             <div className="text-[10px] text-muted-text uppercase tracking-wider">TOTAL / RANK</div>
             <div className="text-xl font-bold text-primary-accent mt-1">{totalTime}</div>
             <div className="text-sm font-bold text-primary-text mt-0.5">
@@ -170,21 +168,21 @@ export default function Round3DashboardPage() {
 
         {/* Squad Members Credits */}
         <div className="pt-6 grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
-          <div>
+          <div className="p-2.5 bg-background border border-border">
             <div className="text-[10px] text-muted-text uppercase">THINKER</div>
-            <div className="font-sans font-semibold text-primary-text">{team?.thinker}</div>
+            <div className="font-sans font-semibold text-primary-text mt-0.5">{team?.thinker}</div>
           </div>
-          <div>
+          <div className="p-2.5 bg-background border border-border">
             <div className="text-[10px] text-muted-text uppercase">CODER</div>
-            <div className="font-sans font-semibold text-primary-text">{team?.coder}</div>
+            <div className="font-sans font-semibold text-primary-text mt-0.5">{team?.coder}</div>
           </div>
-          <div>
+          <div className="p-2.5 bg-background border border-border">
             <div className="text-[10px] text-muted-text uppercase">DEBUGGER</div>
-            <div className="font-sans font-semibold text-primary-text">{team?.debugger}</div>
+            <div className="font-sans font-semibold text-primary-text mt-0.5">{team?.debugger}</div>
           </div>
-          <div>
+          <div className="p-2.5 bg-background border border-border">
             <div className="text-[10px] text-muted-text uppercase">SUPPORTER</div>
-            <div className="font-sans font-semibold text-primary-text">{team?.supporter}</div>
+            <div className="font-sans font-semibold text-primary-text mt-0.5">{team?.supporter}</div>
           </div>
         </div>
       </div>
