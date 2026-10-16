@@ -5,20 +5,38 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { getContestStatus, apiRequest, storage } from '@/lib/api';
 import { VerifiedStamp } from '@/components/VerifiedStamp';
-import { 
-  Terminal, 
-  Lock, 
-  ShieldAlert, 
-  Cpu, 
-  ArrowRight, 
-  Users, 
-  Radio, 
-  AlertTriangle,
-  Flame,
-  CheckCircle2,
-  Bug,
-  Key
-} from 'lucide-react';
+import { StatusBadge } from '@/components/ui';
+import { ArrowRight, Radio, AlertTriangle, Users, Clock, Wifi } from 'lucide-react';
+
+const GATES = [
+  {
+    round: 'Round 01',
+    name: 'Coding Lock',
+    detail: '6 problems · 2 digits each',
+    body: 'Six algorithmic problems. Each yields a 2-digit numeric answer. Combine Q1 through Q6 in order to forge the 12-digit unlock key.',
+    format: 'XX-XX-XX-XX-XX-XX',
+    digits: '12 digits',
+    tint: 'bg-accent-yellow',
+  },
+  {
+    round: 'Round 02',
+    name: 'Debugging Lock',
+    detail: '2 broken programs · 3 digits each',
+    body: 'Two intentionally broken programs with boundary and logic bugs. Repair them, run the payload, and concatenate the two 3-digit outputs into a 6-digit key.',
+    format: 'XXX-XXX',
+    digits: '6 digits',
+    tint: 'bg-accent-pink',
+  },
+  {
+    round: 'Round 03',
+    name: 'The Final Lock',
+    detail: 'Squad reconstruction',
+    body: 'A multi-role extraction challenge. The Thinker, Coder, Debugger, and Supporter each contribute a fragment to synthesize the master completion sequence.',
+    format: 'Master cipher',
+    digits: 'Final verified',
+    tint: 'bg-accent-blue',
+  },
+];
 
 export default function HomePage() {
   const router = useRouter();
@@ -42,7 +60,7 @@ export default function HomePage() {
     try {
       const res = await apiRequest('/auth/team/login', {
         method: 'POST',
-        body: JSON.stringify({ teamNumber: teamNumberInput.trim().toUpperCase() })
+        body: JSON.stringify({ teamNumber: teamNumberInput.trim().toUpperCase() }),
       });
       storage.setTeam(res.team);
       setActiveTeam(res.team);
@@ -55,131 +73,143 @@ export default function HomePage() {
   };
 
   return (
-    <div className="space-y-6 sm:space-y-8 select-none font-mono">
-      {/* Hero / Terminal Banner */}
-      <section className="border border-border bg-surface p-6 sm:p-10 relative overflow-hidden shadow-sm">
-        <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 relative z-10">
-          <div className="space-y-3 sm:space-y-4 max-w-2xl">
-            <div className="flex items-center gap-3">
-              <span className="text-[10px] sm:text-xs font-mono px-2 py-0.5 bg-primary-accent text-primary-accent-contrast font-bold tracking-widest uppercase">
-                EVENT SPECIFICATION
+    <div className="space-y-8">
+      {/* Editorial hero */}
+      <section className="rounded-md border border-border bg-surface p-6 sm:p-10">
+        <div className="flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
+          <div className="max-w-2xl space-y-4">
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="rounded-sm bg-primary-accent px-2 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-primary-accent-contrast">
+                Event specification
               </span>
-              <span className="text-xs font-mono text-muted-text">
-                C//L HOST REVISION: 2026.04
-              </span>
+              <span className="font-mono text-xs text-muted-text">Host revision 2026.04</span>
             </div>
 
-            <h1 className="text-4xl sm:text-6xl font-mono font-bold tracking-tight text-primary-text leading-none uppercase">
-              CODE//LOCK
+            <h1 className="font-serif text-4xl font-semibold leading-none tracking-tight text-primary-text sm:text-6xl">
+              CODE<span className="text-muted-text">//</span>LOCK
             </h1>
 
-            <p className="font-mono text-primary-accent text-xs sm:text-sm tracking-widest uppercase font-bold">
-              THINK. CODE. UNLOCK. DEBUG.
+            <p className="font-mono text-sm font-semibold uppercase tracking-[0.2em] text-warning">
+              Think. Code. Unlock. Debug.
             </p>
 
-            <p className="font-sans text-muted-text text-xs sm:text-sm leading-relaxed">
-              Offline-first full-stack team coding, debugging, and logic contest platform. 
-              Designed for closed LAN environments without external cloud or internet connectivity.
+            <p className="text-sm leading-relaxed text-muted-text">
+              An offline-first team coding, debugging, and logic contest built for closed LAN
+              environments — no cloud or internet connectivity required.
             </p>
 
-            <div className="pt-2 flex flex-wrap gap-3 sm:gap-4 text-xs font-mono text-muted-text">
-              <span className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 bg-primary-accent inline-block"></span>
-                4-MEMBER SPECIALIZED SQUAD
+            <div className="flex flex-wrap gap-x-5 gap-y-2 pt-1 text-xs text-muted-text">
+              <span className="flex items-center gap-2">
+                <span className="inline-block h-1.5 w-1.5 rounded-full bg-accent-yellow" aria-hidden="true" />
+                4-member specialized squad
               </span>
-              <span className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 bg-primary-accent inline-block"></span>
-                OFFICIAL SERVER TIMESTAMPING
+              <span className="flex items-center gap-2">
+                <span className="inline-block h-1.5 w-1.5 rounded-full bg-accent-green" aria-hidden="true" />
+                Official server timestamps
               </span>
-              <span className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 bg-primary-accent inline-block"></span>
-                NO CLOUD RUNTIME DEPENDENCY
+              <span className="flex items-center gap-2">
+                <span className="inline-block h-1.5 w-1.5 rounded-full bg-accent-blue" aria-hidden="true" />
+                No cloud runtime dependency
               </span>
             </div>
           </div>
 
-          <div className="flex flex-col items-start md:items-end justify-between self-stretch gap-4">
-            <VerifiedStamp label="OFFICIAL EVENT" size="lg" />
-            
-            <div className="p-3 border border-border bg-background text-left md:text-right font-mono text-xs w-full sm:w-auto">
-              <div className="text-[10px] text-muted-text tracking-widest uppercase">ORGANIZER STATUS</div>
-              <div className="text-sm font-bold text-primary-accent mt-0.5">
-                {contest?.status || 'CONNECTING...'}
+          <div className="flex flex-col items-start gap-4 md:items-end">
+            <VerifiedStamp label="Official event" size="lg" />
+            <div className="w-full rounded-md border border-border bg-surface-highlight px-4 py-3 text-left md:text-right">
+              <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-text">
+                Organizer status
               </div>
-              <div className="text-[10px] text-muted-text mt-0.5">
-                PORT 5000 / REST ENGINE
+              <div className="mt-1 flex items-center gap-2 md:justify-end">
+                <span className="font-mono text-sm font-semibold text-primary-accent">
+                  {contest?.status || 'Connecting…'}
+                </span>
+                <StatusBadge status={contest?.status} />
               </div>
+              <div className="mt-1 font-mono text-[10px] text-muted-text">Port 5000 · REST engine</div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Main Grid: Team Access Console + Round Architecture */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8">
-        {/* Left Column: Team Terminal Access */}
-        <div className="lg:col-span-5 space-y-6">
-          <div className="border border-border bg-surface p-6 font-mono shadow-sm">
-            <div className="flex items-center justify-between border-b border-border pb-3 mb-4">
-              <div className="flex items-center gap-2 text-xs font-bold text-primary-text">
-                <Terminal className="w-4 h-4 text-primary-accent" />
-                <span>TERMINAL ACCESS</span>
-              </div>
-              <span className="text-[10px] text-muted-text">PORTAL #01</span>
+      {/* Access console + round architecture */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+        {/* Left: team access */}
+        <div className="space-y-6 lg:col-span-5">
+          <div className="rounded-md border border-border bg-surface p-6">
+            <div className="mb-4 flex items-center justify-between border-b border-border pb-3">
+              <h2 className="text-xs font-semibold uppercase tracking-[0.14em] text-primary-text">
+                Team access
+              </h2>
+              <span className="font-mono text-[10px] text-muted-text">Portal 01</span>
             </div>
 
             {activeTeam ? (
               <div className="space-y-4">
-                <div className="p-4 bg-background border border-border space-y-2">
-                  <div className="text-[10px] text-muted-text uppercase tracking-widest">CONNECTED SQUAD</div>
-                  <div className="text-xl font-bold text-primary-accent">{activeTeam.teamNumber}</div>
-                  <div className="text-xs font-sans text-primary-text font-semibold">{activeTeam.teamName}</div>
-                  <div className="text-[11px] text-muted-text pt-2 border-t border-border/60 flex justify-between">
-                    <span>STAGE: ROUND 0{activeTeam.currentRound}</span>
-                    <span className="text-primary-accent uppercase font-bold">{activeTeam.status}</span>
+                <div className="rounded-md border border-border bg-surface-highlight p-4">
+                  <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-text">
+                    Connected squad
+                  </div>
+                  <div className="mt-1 font-mono text-xl font-semibold text-primary-accent">
+                    {activeTeam.teamNumber}
+                  </div>
+                  <div className="text-sm font-medium text-primary-text">{activeTeam.teamName}</div>
+                  <div className="mt-3 flex items-center justify-between border-t border-border pt-2 text-[11px] text-muted-text">
+                    <span>Stage · Round 0{activeTeam.currentRound}</span>
+                    <StatusBadge status={activeTeam.status} />
                   </div>
                 </div>
 
                 <div className="flex gap-2">
                   <Link
                     href="/contest"
-                    className="flex-1 py-2.5 bg-primary-accent text-primary-accent-contrast font-bold text-xs text-center flex items-center justify-center gap-1.5 hover:opacity-90 transition-opacity"
+                    className="flex flex-1 items-center justify-center gap-2 rounded bg-primary-accent px-4 py-2.5 text-xs font-semibold text-primary-accent-contrast hover:opacity-90"
                   >
-                    <span>ENTER CONTEST TERMINAL</span>
-                    <ArrowRight className="w-4 h-4" />
+                    Enter contest
+                    <ArrowRight className="h-4 w-4" aria-hidden="true" />
                   </Link>
                   <button
                     onClick={() => {
                       storage.clearTeam();
                       setActiveTeam(null);
                     }}
-                    className="px-3 py-2.5 border border-border text-xs text-muted-text hover:text-error hover:border-error transition-colors bg-surface"
+                    className="rounded border border-border px-3 py-2.5 text-xs text-muted-text hover:border-error hover:text-error"
                   >
-                    DISCONNECT
+                    Disconnect
                   </button>
                 </div>
               </div>
             ) : (
               <form onSubmit={handleTeamLogin} className="space-y-4">
-                <p className="text-xs text-muted-text leading-relaxed font-sans">
-                  Enter your organizer-assigned Team Number (e.g., <span className="text-primary-text font-bold font-mono">T-001</span>) to access your squad console.
+                <p className="text-xs leading-relaxed text-muted-text">
+                  Enter your organizer-assigned team number (for example{' '}
+                  <span className="font-mono font-semibold text-primary-text">T-001</span>) to access
+                  your squad console.
                 </p>
 
-                <div className="space-y-1.5">
-                  <label className="text-[11px] uppercase tracking-wider text-muted-text block">
-                    TEAM IDENTIFIER
+                <div>
+                  <label
+                    htmlFor="team-number"
+                    className="mb-1 block text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-text"
+                  >
+                    Team identifier
                   </label>
                   <input
+                    id="team-number"
                     type="text"
                     value={teamNumberInput}
                     onChange={(e) => setTeamNumberInput(e.target.value.toUpperCase())}
                     placeholder="e.g. T-027"
-                    className="w-full bg-background border border-border p-2.5 text-sm font-mono text-primary-text uppercase placeholder:text-muted-text/50 focus:outline-none focus:border-primary-accent"
+                    className="w-full rounded border border-border bg-background p-2.5 font-mono text-sm uppercase text-primary-text placeholder:text-muted-text/50 focus:border-primary-accent focus:outline-none"
                   />
                 </div>
 
                 {loginError && (
-                  <div className="p-2.5 bg-error/10 border border-error text-error text-xs flex items-center gap-2">
-                    <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+                  <div
+                    role="alert"
+                    className="flex items-center gap-2 rounded border border-error/40 bg-error/10 p-2.5 text-xs text-error"
+                  >
+                    <AlertTriangle className="h-4 w-4 shrink-0" aria-hidden="true" />
                     <span>{loginError}</span>
                   </div>
                 )}
@@ -187,21 +217,21 @@ export default function HomePage() {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full py-2.5 bg-primary-accent text-primary-accent-contrast font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 hover:opacity-90 transition-opacity disabled:opacity-50"
+                  className="flex w-full items-center justify-center gap-2 rounded bg-primary-accent px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.1em] text-primary-accent-contrast hover:opacity-90 disabled:opacity-50"
                 >
-                  {isLoading ? 'AUTHENTICATING...' : 'AUTHENTICATE TEAM'}
-                  <ArrowRight className="w-4 h-4" />
+                  {isLoading ? 'Authenticating…' : 'Authenticate team'}
+                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
                 </button>
 
-                <div className="pt-3 border-t border-border flex items-center justify-between text-xs text-muted-text">
+                <div className="flex items-center justify-between border-t border-border pt-3 text-xs text-muted-text">
                   <span>New squad?</span>
                   {contest?.status === 'NOT_STARTED' ? (
-                    <Link href="/register" className="text-primary-accent hover:underline">
-                      Register Team Sheet →
+                    <Link href="/register" className="font-semibold text-primary-accent hover:underline">
+                      Register team sheet →
                     </Link>
                   ) : (
-                    <span className="text-warning text-[10px] uppercase">
-                      Registration Locked
+                    <span className="text-[10px] font-semibold uppercase tracking-[0.1em] text-warning">
+                      Registration locked
                     </span>
                   )}
                 </div>
@@ -209,109 +239,73 @@ export default function HomePage() {
             )}
           </div>
 
-          {/* LAN Connection Instructions Box */}
-          <div className="border border-border bg-surface-dark p-5 font-mono text-xs space-y-2.5 shadow-sm">
-            <div className="flex items-center gap-2 text-primary-text font-bold text-[11px] uppercase tracking-wider">
-              <Radio className="w-3.5 h-3.5 text-primary-accent" />
-              <span>PRIVATE LAN / EVENT CONNECTIVITY</span>
+          {/* LAN connectivity */}
+          <div className="rounded-md border border-border bg-surface-highlight p-5 text-xs">
+            <div className="mb-2 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-primary-text">
+              <Wifi className="h-3.5 w-3.5 text-primary-accent" aria-hidden="true" />
+              Private LAN connectivity
             </div>
-            <p className="text-muted-text text-[11px] leading-relaxed font-sans">
-              Participants on the contest Wi-Fi/Ethernet switch should browse to the Organizer Machine LAN IP:
+            <p className="leading-relaxed text-muted-text">
+              Participants on the contest network should browse to the organizer machine&apos;s LAN
+              address:
             </p>
-            <div className="bg-background p-2 border border-border text-primary-accent text-[12px] select-all font-mono">
+            <div className="mt-2 select-all rounded border border-border bg-background px-2 py-1.5 font-mono text-primary-accent">
               http://[ORGANIZER-LAN-IP]:3000
             </div>
-            <p className="text-[10px] text-muted-text/80 font-sans">
-              * Official clock synchronization occurs over HTTP with zero external WAN dependency.
+            <p className="mt-2 text-[10px] text-muted-text">
+              Clock synchronization runs over HTTP with zero external WAN dependency.
             </p>
           </div>
         </div>
 
-        {/* Right Column: Round Locks & Architecture */}
-        <div className="lg:col-span-7 space-y-4">
-          <div className="border border-border bg-surface p-6 font-mono space-y-4 shadow-sm">
-            <div className="flex items-center justify-between border-b border-border pb-3">
-              <span className="text-xs font-bold text-primary-text tracking-wider uppercase">
-                CONTEST SEQUENCE & ROUND LOCKS
-              </span>
-              <span className="text-[10px] text-muted-text">3 DISCIPLINE GATES</span>
+        {/* Right: round architecture */}
+        <div className="space-y-4 lg:col-span-7">
+          <div className="rounded-md border border-border bg-surface p-6">
+            <div className="mb-4 flex items-center justify-between border-b border-border pb-3">
+              <h2 className="text-xs font-semibold uppercase tracking-[0.14em] text-primary-text">
+                Contest sequence &amp; round locks
+              </h2>
+              <span className="font-mono text-[10px] text-muted-text">3 gates</span>
             </div>
 
-            {/* Gate 1 */}
-            <div className="p-4 border border-border bg-surface-dark space-y-2">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="px-1.5 py-0.5 bg-surface text-primary-accent text-[10px] font-bold border border-border">
-                    ROUND 01
-                  </span>
-                  <span className="font-bold text-primary-text text-sm">CODING LOCK</span>
+            <div className="space-y-3">
+              {GATES.map((gate) => (
+                <div key={gate.round} className="overflow-hidden rounded-md border border-border">
+                  <div className={`h-1 w-full ${gate.tint}`} aria-hidden="true" />
+                  <div className="space-y-2 bg-surface-highlight p-4">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <span className="rounded-sm bg-surface px-1.5 py-0.5 font-mono text-[10px] font-semibold text-muted-text">
+                          {gate.round}
+                        </span>
+                        <span className="text-sm font-semibold text-primary-text">{gate.name}</span>
+                      </div>
+                      <span className="text-[11px] text-muted-text">{gate.detail}</span>
+                    </div>
+                    <p className="text-xs leading-relaxed text-muted-text">{gate.body}</p>
+                    <div className="flex justify-between border-t border-border pt-2 text-[11px] text-muted-text">
+                      <span className="font-mono">{gate.format}</span>
+                      <span className="font-semibold text-primary-accent">{gate.digits}</span>
+                    </div>
+                  </div>
                 </div>
-                <span className="text-xs text-muted-text">6 QUESTIONS / 2 DIGITS EACH</span>
-              </div>
-              <p className="text-xs font-sans text-muted-text leading-relaxed">
-                Six algorithmic and data structure problems. Each problem produces a 2-digit numeric output. 
-                Concatenate Q1 through Q6 in order to forge the 12-digit Round 1 unlock key.
-              </p>
-              <div className="text-[11px] text-muted-text pt-1 border-t border-border/40 flex justify-between">
-                <span>FORMAT: [XX-XX-XX-XX-XX-XX]</span>
-                <span className="text-primary-accent font-bold">12 DIGITS</span>
-              </div>
-            </div>
-
-            {/* Gate 2 */}
-            <div className="p-4 border border-border bg-surface-dark space-y-2">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="px-1.5 py-0.5 bg-surface text-warning text-[10px] font-bold border border-border">
-                    ROUND 02
-                  </span>
-                  <span className="font-bold text-primary-text text-sm">DEBUGGING LOCK</span>
-                </div>
-                <span className="text-xs text-muted-text">2 BROKEN PROGRAMS / 3 DIGITS EACH</span>
-              </div>
-              <p className="text-xs font-sans text-muted-text leading-relaxed">
-                Two intentionally broken code implementations with pointer slips, overflow traps, or boundary logic bugs. 
-                Fix the bugs and run the payload to extract two 3-digit outputs, concatenated into a 6-digit key.
-              </p>
-              <div className="text-[11px] text-muted-text pt-1 border-t border-border/40 flex justify-between">
-                <span>FORMAT: [XXX-XXX]</span>
-                <span className="text-warning font-bold">6 DIGITS</span>
-              </div>
-            </div>
-
-            {/* Gate 3 */}
-            <div className="p-4 border border-border bg-surface-dark space-y-2">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="px-1.5 py-0.5 bg-surface text-error text-[10px] font-bold border border-border">
-                    ROUND 03
-                  </span>
-                  <span className="font-bold text-primary-text text-sm">THE FINAL LOCK</span>
-                </div>
-                <span className="text-xs text-muted-text">SQUAD LOGIC RECONSTRUCTION</span>
-              </div>
-              <p className="text-xs font-sans text-muted-text leading-relaxed">
-                Multi-role synchronous extraction challenge. The Thinker, Coder, Debugger, and Supporter must each 
-                extract their distinct cryptographic matrix shard to synthesize the master completion sequence.
-              </p>
-              <div className="text-[11px] text-muted-text pt-1 border-t border-border/40 flex justify-between">
-                <span>FORMAT: MASTER CIPHER</span>
-                <span className="text-primary-accent font-bold">FINAL VERIFIED</span>
-              </div>
+              ))}
             </div>
           </div>
 
-          {/* Scoreboard Link */}
-          <div className="flex items-center justify-between p-4 border border-border bg-surface font-mono text-xs shadow-sm">
+          {/* Scoreboard link */}
+          <div className="flex items-center justify-between rounded-md border border-border bg-surface p-4">
             <div>
-              <div className="font-bold text-primary-text">OFFICIAL LIVE SCOREBOARD</div>
-              <div className="text-muted-text text-[11px]">Server-ordered team rankings & official round split times.</div>
+              <div className="text-sm font-semibold text-primary-text">Official live scoreboard</div>
+              <div className="text-[11px] text-muted-text">
+                Server-ordered rankings and official round split times.
+              </div>
             </div>
             <Link
               href="/leaderboard"
-              className="px-4 py-2 border border-border hover:border-primary-accent text-primary-accent transition-colors bg-surface-dark font-bold"
+              className="rounded border border-border px-4 py-2 text-xs font-semibold text-primary-accent hover:border-primary-accent"
             >
-              VIEW SCOREBOARD →
+              View scoreboard →
             </Link>
           </div>
         </div>

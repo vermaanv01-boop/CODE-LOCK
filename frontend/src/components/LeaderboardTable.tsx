@@ -7,130 +7,139 @@ interface LeaderboardTableProps {
   showRoundBreakdown?: boolean;
 }
 
+const statusPill = (status: string) => {
+  switch (status) {
+    case 'FINISHED':
+      return 'bg-accent-green text-primary-accent';
+    case 'ROUND_2_COMPLETE':
+    case 'ROUND_1_COMPLETE':
+      return 'bg-accent-blue text-primary-accent';
+    case 'IN_ROUND_3':
+      return 'bg-accent-pink text-primary-accent';
+    default:
+      return 'bg-surface-highlight text-muted-text';
+  }
+};
+
+const statusLabel = (status: string) => {
+  switch (status) {
+    case 'FINISHED':
+      return 'Finished';
+    case 'ROUND_2_COMPLETE':
+      return 'R2 cleared';
+    case 'ROUND_1_COMPLETE':
+      return 'R1 cleared';
+    case 'IN_ROUND_3':
+      return 'Final lock';
+    default:
+      return status.replace(/_/g, ' ');
+  }
+};
+
 export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
   entries,
   highlightTeamNumber,
-  showRoundBreakdown = true
+  showRoundBreakdown = true,
 }) => {
   return (
-    <div className="w-full border border-border bg-surface font-mono overflow-x-auto select-none shadow-sm">
-      <table className="w-full text-left border-collapse text-xs min-w-[720px]">
+    <div className="table-scroll-container w-full rounded-md border border-border bg-surface">
+      <table className="w-full min-w-[720px] border-collapse text-left text-xs">
         <thead>
-          <tr className="border-b border-border bg-surface-dark text-muted-text text-[11px] tracking-wider uppercase">
-            <th className="py-2.5 px-3 border-r border-border text-center w-14 font-semibold">RANK</th>
-            <th className="py-2.5 px-3 border-r border-border w-28 font-semibold">TEAM NO.</th>
-            <th className="py-2.5 px-4 border-r border-border font-semibold">TEAM NAME</th>
-            <th className="py-2.5 px-3 border-r border-border text-center w-28 font-semibold">CURRENT ROUND</th>
+          <tr className="border-b border-border bg-surface-highlight text-[10px] uppercase tracking-[0.12em] text-muted-text">
+            <th scope="col" className="w-16 px-3 py-2.5 text-center font-semibold">Rank</th>
+            <th scope="col" className="w-28 px-3 py-2.5 font-semibold">Team</th>
+            <th scope="col" className="px-4 py-2.5 font-semibold">Name</th>
+            <th scope="col" className="w-28 px-3 py-2.5 text-center font-semibold">Round</th>
             {showRoundBreakdown && (
               <>
-                <th className="py-2.5 px-3 border-r border-border text-right w-24 font-semibold">R01 TIME</th>
-                <th className="py-2.5 px-3 border-r border-border text-right w-24 font-semibold">R02 TIME</th>
-                <th className="py-2.5 px-3 border-r border-border text-right w-24 font-semibold">R03 TIME</th>
+                <th scope="col" className="w-24 px-3 py-2.5 text-right font-semibold">R01</th>
+                <th scope="col" className="w-24 px-3 py-2.5 text-right font-semibold">R02</th>
+                <th scope="col" className="w-24 px-3 py-2.5 text-right font-semibold">R03</th>
               </>
             )}
-            <th className="py-2.5 px-3 border-r border-border text-right w-28 text-primary-accent font-semibold">TOTAL TIME</th>
-            <th className="py-2.5 px-3 text-center w-32 font-semibold">STATUS</th>
+            <th scope="col" className="w-28 px-3 py-2.5 text-right font-semibold">Total</th>
+            <th scope="col" className="w-32 px-3 py-2.5 text-center font-semibold">Status</th>
           </tr>
         </thead>
         <tbody>
           {entries.length === 0 ? (
             <tr>
-              <td colSpan={showRoundBreakdown ? 9 : 6} className="py-8 text-center text-muted-text text-xs">
-                [NO REGISTERED TEAMS ON SCOREBOARD RECORD]
+              <td
+                colSpan={showRoundBreakdown ? 9 : 6}
+                className="px-3 py-12 text-center text-xs text-muted-text"
+              >
+                No teams on the scoreboard yet.
               </td>
             </tr>
           ) : (
             entries.map((entry) => {
-              const isHighlighted = !!(highlightTeamNumber && entry.teamNumber.toUpperCase() === highlightTeamNumber.toUpperCase());
-              const isFinished = entry.status === 'FINISHED';
+              const isHighlighted = !!(
+                highlightTeamNumber &&
+                entry.teamNumber.toUpperCase() === highlightTeamNumber.toUpperCase()
+              );
 
               return (
                 <tr
                   key={entry.teamNumber}
-                  className={`border-b border-border/70 transition-colors ${
-                    isHighlighted
-                      ? 'bg-primary-accent/15 font-semibold text-primary-text'
-                      : 'hover:bg-surface-highlight'
+                  className={`border-b border-border/70 transition-colors duration-150 ${
+                    isHighlighted ? 'bg-accent-yellow/20 font-semibold' : 'hover:bg-surface-highlight'
                   }`}
                 >
-                  {/* Rank */}
-                  <td className="py-2.5 px-3 border-r border-border/60 text-center font-bold">
-                    {entry.rank === 1 ? (
-                      <span className="inline-flex items-center justify-center text-primary-accent font-bold px-1 border border-primary-accent/50 bg-primary-accent/10">
-                        #01
+                  <td className="px-3 py-2.5 text-center font-mono tabular-nums">
+                    {entry.rank <= 3 ? (
+                      <span className="inline-flex min-w-8 items-center justify-center rounded-sm border border-border-strong bg-surface px-1.5 py-0.5 font-semibold text-primary-accent">
+                        {entry.rank.toString().padStart(2, '0')}
                       </span>
                     ) : (
-                      <span className={entry.rank <= 3 ? 'text-primary-text font-semibold' : 'text-muted-text'}>
-                        #{entry.rank.toString().padStart(2, '0')}
+                      <span className="text-muted-text">
+                        {entry.rank.toString().padStart(2, '0')}
                       </span>
                     )}
                   </td>
 
-                  {/* Team Number */}
-                  <td className="py-2.5 px-3 border-r border-border/60 font-bold text-primary-accent tracking-wide">
+                  <td className="px-3 py-2.5 font-mono font-semibold text-primary-accent">
                     {entry.teamNumber}
                     {isHighlighted && (
-                      <span className="ml-1.5 text-[9px] px-1 py-0.2 bg-primary-accent text-primary-accent-contrast uppercase">
-                        YOU
+                      <span className="ml-1.5 rounded-sm bg-primary-accent px-1 py-0.5 text-[9px] font-semibold uppercase tracking-[0.1em] text-primary-accent-contrast">
+                        You
                       </span>
                     )}
                   </td>
 
-                  {/* Team Name */}
-                  <td className="py-2.5 px-4 border-r border-border/60 font-sans text-primary-text text-sm">
-                    {entry.teamName}
-                  </td>
+                  <td className="px-4 py-2.5 text-sm text-primary-text">{entry.teamName}</td>
 
-                  {/* Current Round */}
-                  <td className="py-2.5 px-3 border-r border-border/60 text-center">
-                    <span className="px-1.5 py-0.5 border border-border text-[10px] bg-surface-highlight">
-                      ROUND 0{entry.currentRound}
+                  <td className="px-3 py-2.5 text-center">
+                    <span className="rounded-sm border border-border bg-surface-highlight px-1.5 py-0.5 text-[10px] tabular-nums">
+                      R0{entry.currentRound}
                     </span>
                   </td>
 
-                  {/* Round breakdown */}
                   {showRoundBreakdown && (
                     <>
-                      <td className="py-2.5 px-3 border-r border-border/60 text-right text-muted-text font-mono">
+                      <td className="px-3 py-2.5 text-right font-mono tabular-nums text-muted-text">
                         {entry.formattedRound1Time}
                       </td>
-                      <td className="py-2.5 px-3 border-r border-border/60 text-right text-muted-text font-mono">
+                      <td className="px-3 py-2.5 text-right font-mono tabular-nums text-muted-text">
                         {entry.formattedRound2Time}
                       </td>
-                      <td className="py-2.5 px-3 border-r border-border/60 text-right text-muted-text font-mono">
+                      <td className="px-3 py-2.5 text-right font-mono tabular-nums text-muted-text">
                         {entry.formattedRound3Time}
                       </td>
                     </>
                   )}
 
-                  {/* Total Official Time */}
-                  <td className="py-2.5 px-3 border-r border-border/60 text-right font-bold text-primary-accent text-sm font-mono">
+                  <td className="px-3 py-2.5 text-right font-mono text-sm font-semibold tabular-nums text-primary-accent">
                     {entry.formattedTotalTime}
                   </td>
 
-                  {/* Status Badge */}
-                  <td className="py-2.5 px-3 text-center">
-                    {isFinished ? (
-                      <span className="inline-block px-2 py-0.5 text-[10px] bg-primary-accent text-primary-accent-contrast font-bold tracking-wider uppercase border border-primary-accent">
-                        FINISHED ✓
-                      </span>
-                    ) : entry.status === 'ROUND_2_COMPLETE' ? (
-                      <span className="inline-block px-1.5 py-0.5 text-[10px] bg-surface-highlight border border-border text-primary-accent uppercase">
-                        R2 PASSED
-                      </span>
-                    ) : entry.status === 'ROUND_1_COMPLETE' ? (
-                      <span className="inline-block px-1.5 py-0.5 text-[10px] bg-surface-highlight border border-border text-primary-accent uppercase">
-                        R1 PASSED
-                      </span>
-                    ) : entry.status === 'IN_ROUND_3' ? (
-                      <span className="inline-block px-1.5 py-0.5 text-[10px] border border-warning text-warning uppercase bg-warning/10">
-                        FINAL LOCK
-                      </span>
-                    ) : (
-                      <span className="inline-block px-1.5 py-0.5 text-[10px] border border-border text-muted-text uppercase bg-surface-highlight">
-                        {entry.status.replace(/_/g, ' ')}
-                      </span>
-                    )}
+                  <td className="px-3 py-2.5 text-center">
+                    <span
+                      className={`inline-block rounded-sm px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.1em] ${statusPill(
+                        entry.status
+                      )}`}
+                    >
+                      {statusLabel(entry.status)}
+                    </span>
                   </td>
                 </tr>
               );

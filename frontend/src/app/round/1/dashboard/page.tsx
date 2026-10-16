@@ -2,11 +2,11 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { getRoundCompletion, getLeaderboard, advanceRound, storage } from '@/lib/api';
 import { VerifiedStamp } from '@/components/VerifiedStamp';
 import { LeaderboardTable } from '@/components/LeaderboardTable';
-import { ArrowRight, Trophy, Clock, CheckCircle2, ShieldCheck, Activity } from 'lucide-react';
+import { Stat, LoadingState, SectionLabel } from '@/components/ui';
+import { ArrowRight, Trophy } from 'lucide-react';
 
 export default function Round1DashboardPage() {
   const router = useRouter();
@@ -49,11 +49,7 @@ export default function Round1DashboardPage() {
     setIsAdvancing(true);
     try {
       await advanceRound(1, team.teamNumber);
-      storage.setTeam({
-        ...team,
-        currentRound: 2,
-        status: 'IN_ROUND_2'
-      });
+      storage.setTeam({ ...team, currentRound: 2, status: 'IN_ROUND_2' });
       router.push('/round/2');
     } catch (err: any) {
       router.push('/round/2');
@@ -62,136 +58,81 @@ export default function Round1DashboardPage() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="py-24 text-center font-mono text-xs text-muted-text">
-        [VERIFYING ROUND 01 TELEMETRY RECORD...]
-      </div>
-    );
-  }
+  if (loading) return <LoadingState label="Verifying Round 01 record" />;
 
-  // Find team row from leaderboard
-  const teamRow = leaderboard.find(e => e.teamNumber === team?.teamNumber);
+  const teamRow = leaderboard.find((e) => e.teamNumber === team?.teamNumber);
   const roundTime = completion?.formattedCompletionTime || teamRow?.formattedRound1Time || '--:--';
   const totalTime = teamRow?.formattedTotalTime || completion?.formattedCompletionTime || '--:--';
   const currentPos = teamRow ? teamRow.rank : (completion?.currentPosition || 1);
 
   return (
-    <div className="space-y-6 select-none font-mono">
-      {/* Visual Style: CONTROL ROOM */}
-      <div className="border-2 border-border bg-surface p-5 sm:p-8 shadow-sm">
-        {/* Top Control Room Header */}
-        <div className="flex flex-col md:flex-row md:items-start justify-between pb-6 border-b border-border gap-6">
+    <div className="space-y-6">
+      {/* Completion banner */}
+      <div className="rounded-md border border-border bg-surface p-5 sm:p-8">
+        <div className="flex flex-col justify-between gap-6 border-b border-border pb-6 md:flex-row md:items-start">
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <span className="text-[10px] text-primary-accent tracking-widest uppercase border border-primary-accent/40 bg-primary-accent/10 px-2 py-0.5 font-bold">
+              <span className="rounded-sm bg-accent-green px-2 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-primary-accent">
                 C//L 2026
               </span>
-              <span className="text-[10px] text-muted-text tracking-widest uppercase">
-                CONTROL ROOM TELEMETRY
+              <span className="text-[10px] uppercase tracking-[0.14em] text-muted-text">
+                Control room
               </span>
             </div>
-
-            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-primary-text leading-none">
-              ROUND 01 COMPLETE
+            <h1 className="font-serif text-3xl font-semibold tracking-tight text-primary-text sm:text-4xl">
+              Round 01 complete
             </h1>
-
-            <p className="text-xs text-muted-text font-sans">
+            <p className="text-xs leading-relaxed text-muted-text">
               Gate 01 Coding Lock has been verified by the authoritative server clock.
             </p>
           </div>
-
-          <div className="flex flex-col items-end gap-2">
-            <VerifiedStamp label="VERIFIED ✓" size="lg" />
-            <span className="text-[10px] text-muted-text uppercase">OFFICIAL SERVER AUDIT</span>
+          <div className="flex flex-col items-start gap-2 md:items-end">
+            <VerifiedStamp label="Verified" size="lg" />
+            <span className="text-[10px] uppercase tracking-[0.12em] text-muted-text">
+              Official server audit
+            </span>
           </div>
         </div>
 
-        {/* Dense Control Room Metrics Matrix */}
-        <div className="grid grid-cols-2 lg:grid-cols-6 gap-3 py-6 border-b border-border">
-          {/* TEAM NUMBER */}
-          <div className="p-3.5 bg-background border border-border">
-            <div className="text-[10px] text-muted-text uppercase tracking-wider">TEAM NUMBER</div>
-            <div className="text-xl font-bold text-primary-accent mt-1">
-              {completion?.teamNumber || team?.teamNumber}
-            </div>
-          </div>
-
-          {/* TEAM NAME */}
-          <div className="p-3.5 bg-background border border-border">
-            <div className="text-[10px] text-muted-text uppercase tracking-wider">TEAM NAME</div>
-            <div className="text-xs font-sans font-semibold text-primary-text truncate mt-1.5">
-              {completion?.teamName || team?.teamName}
-            </div>
-          </div>
-
-          {/* ROUND TIME */}
-          <div className="p-3.5 bg-background border border-border">
-            <div className="text-[10px] text-muted-text uppercase tracking-wider">ROUND TIME</div>
-            <div className="text-xl font-bold text-primary-text mt-1">
-              {roundTime}
-            </div>
-          </div>
-
-          {/* TOTAL TIME */}
-          <div className="p-3.5 bg-background border border-border">
-            <div className="text-[10px] text-muted-text uppercase tracking-wider">TOTAL TIME</div>
-            <div className="text-xl font-bold text-primary-accent mt-1">
-              {totalTime}
-            </div>
-          </div>
-
-          {/* QUESTIONS COMPLETED */}
-          <div className="p-3.5 bg-background border border-border">
-            <div className="text-[10px] text-muted-text uppercase tracking-wider">QUESTIONS COMPLETED</div>
-            <div className="text-xl font-bold text-primary-text mt-1">
-              06 / 06
-            </div>
-          </div>
-
-          {/* CURRENT POSITION */}
-          <div className="p-3.5 bg-surface-dark border-2 border-primary-accent/80 col-span-2 lg:col-span-1">
-            <div className="text-[10px] text-muted-text uppercase tracking-wider">CURRENT POSITION</div>
-            <div className="text-xl font-bold text-primary-accent mt-1">
-              #{currentPos.toString().padStart(2, '0')}
-            </div>
-          </div>
+        {/* Metrics */}
+        <div className="grid grid-cols-2 gap-3 py-6 lg:grid-cols-6">
+          <Stat label="Team" value={completion?.teamNumber || team?.teamNumber} accent="green" />
+          <Stat label="Team name" value={completion?.teamName || team?.teamName} />
+          <Stat label="Round time" value={roundTime} hint="Coding Lock" />
+          <Stat label="Total time" value={totalTime} accent="green" hint="Cumulative" />
+          <Stat label="Questions" value="06 / 06" hint="Completed" />
+          <Stat label="Position" value={`#${currentPos.toString().padStart(2, '0')}`} accent="yellow" hint={`of ${leaderboard.length}`} />
         </div>
 
-        {/* Continue Action */}
-        <div className="pt-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="text-xs text-muted-text font-sans leading-relaxed">
-            Round 02 presents broken source files with runtime exceptions. Only the assigned squad Debugger should begin triage.
-          </div>
-
+        {/* Continue */}
+        <div className="flex flex-col items-start justify-between gap-4 border-t border-border pt-6 sm:flex-row sm:items-center">
+          <p className="max-w-xl text-xs leading-relaxed text-muted-text">
+            Round 02 presents broken source files with runtime exceptions. Begin triage with your
+            assigned Debugger.
+          </p>
           <button
             onClick={handleContinue}
             disabled={isAdvancing}
-            className="w-full sm:w-auto px-8 py-3.5 bg-primary-accent text-primary-accent-contrast font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 hover:opacity-90 transition-opacity shrink-0"
+            className="flex w-full shrink-0 items-center justify-center gap-2 rounded bg-primary-accent px-8 py-3.5 text-xs font-semibold uppercase tracking-[0.1em] text-primary-accent-contrast hover:opacity-90 disabled:opacity-50 sm:w-auto"
           >
-            <span>{isAdvancing ? 'INITIALIZING GATE 02...' : 'PROCEED TO ROUND 02'}</span>
-            <ArrowRight className="w-4 h-4" />
+            <span>{isAdvancing ? 'Initializing Gate 02…' : 'Proceed to Round 02'}</span>
+            <ArrowRight className="h-4 w-4" aria-hidden="true" />
           </button>
         </div>
       </div>
 
-      {/* LIVE LEADERBOARD (Dense Technical Scoreboard) */}
+      {/* Leaderboard */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Trophy className="w-4 h-4 text-primary-accent" />
-            <h2 className="text-sm font-bold text-primary-text uppercase tracking-wider">
-              LIVE LEADERBOARD (ROUND 01 STANDINGS)
+            <Trophy className="h-4 w-4 text-primary-accent" aria-hidden="true" />
+            <h2 className="text-sm font-semibold uppercase tracking-[0.1em] text-primary-text">
+              Live leaderboard · Round 01
             </h2>
           </div>
-          <span className="text-[10px] text-muted-text">SERVER SYNCHRONIZED</span>
+          <SectionLabel>Server synchronized</SectionLabel>
         </div>
-
-        <LeaderboardTable
-          entries={leaderboard}
-          highlightTeamNumber={team?.teamNumber}
-          showRoundBreakdown={true}
-        />
+        <LeaderboardTable entries={leaderboard} highlightTeamNumber={team?.teamNumber} showRoundBreakdown />
       </div>
     </div>
   );

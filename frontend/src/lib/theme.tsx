@@ -10,56 +10,51 @@ interface ThemeContextType {
   setTheme: (theme: Theme) => void;
 }
 
+const STORAGE_KEY = 'codelock_theme';
+
 const ThemeContext = createContext<ThemeContextType>({
-  theme: 'dark',
+  theme: 'light',
   toggleTheme: () => {},
-  setTheme: () => {}
+  setTheme: () => {},
 });
 
+function applyTheme(t: Theme) {
+  if (typeof document === 'undefined') return;
+  const root = document.documentElement;
+  root.classList.remove('light', 'dark');
+  root.classList.add(t);
+  root.setAttribute('data-theme', t);
+}
+
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [theme, setThemeState] = useState<Theme>('dark');
-  const [mounted, setMounted] = useState<boolean>(false);
+  const [theme, setThemeState] = useState<Theme>('light');
 
   useEffect(() => {
-    setMounted(true);
+    let resolved: Theme = 'light';
     try {
-      const saved = localStorage.getItem('codelock_theme') as Theme | null;
+      const saved = localStorage.getItem(STORAGE_KEY);
       if (saved === 'light' || saved === 'dark') {
-        setThemeState(saved);
-        applyTheme(saved);
-      } else {
-        applyTheme('dark');
+        resolved = saved;
+      } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        resolved = 'dark';
       }
     } catch {
-      applyTheme('dark');
+      resolved = 'light';
     }
+    setThemeState(resolved);
+    applyTheme(resolved);
   }, []);
-
-  const applyTheme = (t: Theme) => {
-    if (typeof document === 'undefined') return;
-    const root = document.documentElement;
-    if (t === 'light') {
-      root.classList.remove('dark');
-      root.classList.add('light');
-      root.setAttribute('data-theme', 'light');
-    } else {
-      root.classList.remove('light');
-      root.classList.add('dark');
-      root.setAttribute('data-theme', 'dark');
-    }
-  };
 
   const setTheme = (t: Theme) => {
     setThemeState(t);
     try {
-      localStorage.setItem('codelock_theme', t);
+      localStorage.setItem(STORAGE_KEY, t);
     } catch {}
     applyTheme(t);
   };
 
   const toggleTheme = () => {
-    const next = theme === 'dark' ? 'light' : 'dark';
-    setTheme(next);
+    setTheme(theme === 'dark' ? 'light' : 'dark');
   };
 
   return (

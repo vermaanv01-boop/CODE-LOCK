@@ -2,24 +2,9 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { getRoundQuestions, submitRoundCode, getContestStatus, storage } from '@/lib/api';
-import { MonacoOrFallbackEditor } from '@/components/MonacoOrFallbackEditor';
-import { 
-  Lock, 
-  Key, 
-  CheckCircle2, 
-  AlertTriangle, 
-  Terminal, 
-  HelpCircle, 
-  Code2, 
-  Info,
-  Send,
-  Radio,
-  Clock,
-  ArrowRight,
-  FileCode
-} from 'lucide-react';
+import { LoadingState, SectionLabel } from '@/components/ui';
+import { Key, AlertTriangle, Send, ArrowRight, Clock, Check } from 'lucide-react';
 
 export default function Round1Page() {
   const router = useRouter();
@@ -27,7 +12,7 @@ export default function Round1Page() {
   const [questions, setQuestions] = useState<any[]>([]);
   const [activeQuestionIdx, setActiveQuestionIdx] = useState<number>(0);
   const [digitInputs, setDigitInputs] = useState<Record<number, string>>({
-    1: '', 2: '', 3: '', 4: '', 5: '', 6: ''
+    1: '', 2: '', 3: '', 4: '', 5: '', 6: '',
   });
   const [combinedCode, setCombinedCode] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -45,27 +30,22 @@ export default function Round1Page() {
 
     let startTime: number | null = null;
 
-    // Fetch contest status & questions
-    getContestStatus().then(statusRes => {
-      if (statusRes.status !== 'ACTIVE' && statusRes.status !== 'COMPLETED') {
-        router.push('/contest');
-        return;
-      }
-      if (statusRes.contestStartTime) {
-        startTime = statusRes.contestStartTime;
-      }
+    getContestStatus()
+      .then((statusRes) => {
+        if (statusRes.status !== 'ACTIVE' && statusRes.status !== 'COMPLETED') {
+          router.push('/contest');
+          return;
+        }
+        if (statusRes.contestStartTime) startTime = statusRes.contestStartTime;
 
-      getRoundQuestions(1, currentTeam.teamNumber)
-        .then(res => {
-          setQuestions(res.questions || []);
-        })
-        .catch(err => {
-          if (err.data?.error === 'ROUND_LOCKED') {
-            router.push('/contest');
-          }
-        })
-        .finally(() => setLoading(false));
-    }).catch(() => setLoading(false));
+        getRoundQuestions(1, currentTeam.teamNumber)
+          .then((res) => setQuestions(res.questions || []))
+          .catch((err) => {
+            if (err.data?.error === 'ROUND_LOCKED') router.push('/contest');
+          })
+          .finally(() => setLoading(false));
+      })
+      .catch(() => setLoading(false));
 
     const timerInterval = setInterval(() => {
       if (startTime) {
@@ -75,7 +55,7 @@ export default function Round1Page() {
         const m = Math.floor((secs % 3600) / 60);
         const s = secs % 60;
         setServerTimeStr(
-          `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`
+          [h, m, s].map((n) => n.toString().padStart(2, '0')).join(':')
         );
       }
     }, 1000);
@@ -83,21 +63,16 @@ export default function Round1Page() {
     return () => clearInterval(timerInterval);
   }, [router]);
 
-  // Handle individual question 2-digit input
   const handleDigitChange = (qNum: number, val: string) => {
     const cleaned = val.replace(/\D/g, '').slice(0, 2);
     const updated = { ...digitInputs, [qNum]: cleaned };
     setDigitInputs(updated);
-
-    const fullCode = [1, 2, 3, 4, 5, 6].map(n => updated[n] || '').join('');
-    setCombinedCode(fullCode);
+    setCombinedCode([1, 2, 3, 4, 5, 6].map((n) => updated[n] || '').join(''));
   };
 
-  // Handle direct 12-digit combined input
   const handleCombinedCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const cleaned = e.target.value.replace(/\D/g, '').slice(0, 12);
     setCombinedCode(cleaned);
-
     if (cleaned.length === 12) {
       setDigitInputs({
         1: cleaned.slice(0, 2),
@@ -105,7 +80,7 @@ export default function Round1Page() {
         3: cleaned.slice(4, 6),
         4: cleaned.slice(6, 8),
         5: cleaned.slice(8, 10),
-        6: cleaned.slice(10, 12)
+        6: cleaned.slice(10, 12),
       });
     }
   };
@@ -115,7 +90,9 @@ export default function Round1Page() {
     setSubmissionError('');
 
     if (combinedCode.length !== 12) {
-      setSubmissionError('The Round 01 unlock code must be exactly 12 numeric digits (6 questions x 2 digits).');
+      setSubmissionError(
+        'The Round 01 unlock code must be exactly 12 numeric digits (6 questions × 2 digits).'
+      );
       return;
     }
 
@@ -132,81 +109,71 @@ export default function Round1Page() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="py-24 text-center font-mono text-xs text-muted-text">
-        [INITIALIZING ROUND 01 CODING LOCK SECURE SHEET...]
-      </div>
-    );
-  }
+  if (loading) return <LoadingState label="Loading Round 01 sheet" />;
 
   const currentQ = questions[activeQuestionIdx];
 
   return (
-    <div className="space-y-6 select-none font-mono">
-      {/* Header Structure: ROUND 01 | CODING LOCK | TEAM NUMBER | TEAM NAME | SERVER TIME */}
-      <div className="border border-border bg-surface p-5 sm:p-6 shadow-sm">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border pb-4">
+    <div className="space-y-6">
+      {/* Round header band */}
+      <div className="rounded-md border border-border bg-surface p-5 sm:p-6">
+        <div className="flex flex-col justify-between gap-4 border-b border-border pb-4 md:flex-row md:items-center">
           <div>
-            <div className="text-[10px] text-primary-accent tracking-widest uppercase font-bold flex items-center gap-1.5 mb-1">
-              <Lock className="w-3.5 h-3.5" />
-              <span>ROUND 01</span>
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-primary-text tracking-tight">
-              CODING LOCK
+            <SectionLabel>Round 01 · Coding Lock</SectionLabel>
+            <h1 className="mt-1 font-serif text-2xl font-semibold tracking-tight text-primary-text sm:text-3xl">
+              Coding Lock
             </h1>
           </div>
 
-          {/* Telemetry metadata: TEAM NUMBER, TEAM NAME, SERVER TIME */}
-          <div className="grid grid-cols-3 gap-2 sm:gap-4 text-xs">
-            <div className="p-2.5 bg-background border border-border">
-              <div className="text-[10px] text-muted-text uppercase">TEAM NUMBER</div>
-              <div className="font-bold text-primary-accent text-sm mt-0.5">{team?.teamNumber}</div>
-            </div>
-
-            <div className="p-2.5 bg-background border border-border">
-              <div className="text-[10px] text-muted-text uppercase">TEAM NAME</div>
-              <div className="font-sans text-primary-text text-xs truncate max-w-[120px] sm:max-w-[180px] mt-0.5">
-                {team?.teamName}
+          <div className="grid grid-cols-3 gap-2 text-xs sm:gap-4">
+            <div className="rounded border border-border bg-surface-highlight px-3 py-2">
+              <div className="text-[10px] uppercase tracking-[0.1em] text-muted-text">Team</div>
+              <div className="mt-0.5 font-mono font-semibold text-primary-accent">
+                {team?.teamNumber}
               </div>
             </div>
-
-            <div className="p-2.5 bg-background border border-border">
-              <div className="text-[10px] text-muted-text uppercase flex items-center gap-1">
-                <Clock className="w-2.5 h-2.5 text-primary-accent" />
-                <span>SERVER TIME</span>
+            <div className="min-w-0 rounded border border-border bg-surface-highlight px-3 py-2">
+              <div className="text-[10px] uppercase tracking-[0.1em] text-muted-text">Name</div>
+              <div className="mt-0.5 truncate text-primary-text">{team?.teamName}</div>
+            </div>
+            <div className="rounded border border-border bg-surface-highlight px-3 py-2">
+              <div className="flex items-center gap-1 text-[10px] uppercase tracking-[0.1em] text-muted-text">
+                <Clock className="h-2.5 w-2.5" aria-hidden="true" />
+                Server time
               </div>
-              <div className="font-bold text-primary-accent text-sm mt-0.5">{serverTimeStr}</div>
+              <div className="mt-0.5 font-mono font-semibold tabular-nums text-primary-accent">
+                {serverTimeStr}
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Question Navigation: 01 02 03 04 05 06 */}
-        <div className="pt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <div className="text-[11px] text-muted-text uppercase tracking-wider font-semibold">
-            QUESTION NAVIGATION:
-          </div>
-
-          <div className="grid grid-cols-6 gap-1 sm:gap-2">
+        {/* Question navigation */}
+        <div className="flex flex-col justify-between gap-2 pt-4 sm:flex-row sm:items-center">
+          <SectionLabel>Question navigation</SectionLabel>
+          <div className="grid grid-cols-6 gap-1.5 sm:gap-2">
             {questions.map((q, idx) => {
               const isSelected = activeQuestionIdx === idx;
               const val = digitInputs[q.questionNumber];
               const isFilled = val && val.length === 2;
-
               return (
                 <button
                   key={q.questionNumber}
                   onClick={() => setActiveQuestionIdx(idx)}
-                  className={`py-2 px-2 sm:px-4 border text-center transition-colors flex flex-col items-center gap-0.5 ${
+                  aria-current={isSelected ? 'true' : undefined}
+                  className={`flex flex-col items-center gap-0.5 rounded-md border px-2 py-2 transition-colors duration-150 sm:px-4 ${
                     isSelected
-                      ? 'bg-primary-accent text-primary-accent-contrast border-primary-accent font-bold'
+                      ? 'border-primary-accent bg-primary-accent text-primary-accent-contrast'
                       : isFilled
-                      ? 'bg-surface-highlight text-primary-accent border-border font-semibold hover:border-primary-accent'
-                      : 'bg-background text-muted-text border-border hover:text-primary-text hover:border-border'
+                      ? 'border-border bg-accent-green/25 text-primary-accent hover:border-primary-accent'
+                      : 'border-border bg-background text-muted-text hover:text-primary-text'
                   }`}
                 >
-                  <span className="text-xs font-mono">0{q.questionNumber}</span>
-                  <span className="text-[9px] font-mono tracking-tighter">
+                  <span className="flex items-center gap-1 font-mono text-xs">
+                    0{q.questionNumber}
+                    {isFilled && <Check className="h-3 w-3" aria-hidden="true" />}
+                  </span>
+                  <span className="font-mono text-[9px] tracking-tight">
                     {val ? `[${val}]` : '[--]'}
                   </span>
                 </button>
@@ -216,233 +183,235 @@ export default function Round1Page() {
         </div>
       </div>
 
-      {/* Main Question Area (Problem-Sheet Layout) */}
       {currentQ && (
-        <div className="border border-border bg-surface p-5 sm:p-8 space-y-6 shadow-sm">
-          {/* Question Title Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b-2 border-border pb-4 gap-2">
-            <div>
-              <span className="text-[10px] uppercase tracking-widest text-primary-accent font-bold">
-                SHEET ENTRY / 0{currentQ.questionNumber}
-              </span>
-              <h2 className="text-xl sm:text-2xl font-bold text-primary-text font-sans">
-                QUESTION 0{currentQ.questionNumber}: {currentQ.content.title}
-              </h2>
-            </div>
-            <span className="text-[10px] text-muted-text border border-border px-2 py-1 bg-surface-dark w-fit">
-              OUTPUT REQUIREMENT: 2-DIGIT NUMERIC
-            </span>
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+          {/* Primary: problem sheet */}
+          <div className="space-y-6 lg:col-span-7">
+            <article className="rounded-md border border-border bg-surface p-5 sm:p-8">
+              <header className="mb-5 flex flex-col justify-between gap-2 border-b-2 border-border pb-4 sm:flex-row sm:items-center">
+                <div>
+                  <SectionLabel>Sheet entry · 0{currentQ.questionNumber}</SectionLabel>
+                  <h2 className="mt-1 text-xl font-semibold text-primary-text sm:text-2xl">
+                    Q0{currentQ.questionNumber}: {currentQ.content.title}
+                  </h2>
+                </div>
+                <span className="w-fit rounded-sm border border-border bg-surface-highlight px-2 py-1 text-[10px] uppercase tracking-[0.1em] text-muted-text">
+                  Output · 2-digit numeric
+                </span>
+              </header>
+
+              <section className="space-y-2">
+                <SectionLabel>Problem</SectionLabel>
+                <p className="whitespace-pre-line rounded-md border border-border bg-surface-highlight p-4 text-sm leading-relaxed text-primary-text">
+                  {currentQ.content.problemStatement}
+                </p>
+              </section>
+
+              <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
+                <section className="space-y-1.5">
+                  <SectionLabel>Input</SectionLabel>
+                  <div className="whitespace-pre-wrap rounded-md border border-border bg-background p-3.5 font-mono text-xs leading-relaxed text-primary-text">
+                    {currentQ.content.inputDescription || 'Supplied via the problem specification.'}
+                  </div>
+                </section>
+                <section className="space-y-1.5">
+                  <SectionLabel>Output</SectionLabel>
+                  <div className="rounded-md border border-border bg-background p-3.5 font-mono text-xs leading-relaxed text-primary-text">
+                    {currentQ.content.outputDescription ||
+                      '2-digit numeric integer (zero-padded if under 10).'}
+                  </div>
+                </section>
+              </div>
+
+              {currentQ.content.constraints?.length > 0 && (
+                <section className="mt-6 space-y-1.5">
+                  <SectionLabel>Constraints</SectionLabel>
+                  <ul className="list-disc space-y-1 rounded-md border border-border bg-background p-3.5 pl-6 text-xs leading-relaxed text-muted-text">
+                    {currentQ.content.constraints.map((c: string, i: number) => (
+                      <li key={i}>{c}</li>
+                    ))}
+                  </ul>
+                </section>
+              )}
+
+              {currentQ.content.examples?.length > 0 && (
+                <section className="mt-6 space-y-2">
+                  <SectionLabel>Examples</SectionLabel>
+                  {currentQ.content.examples.map((ex: any, idx: number) => (
+                    <div
+                      key={idx}
+                      className="space-y-1.5 rounded-md border border-border bg-background p-3.5 font-mono text-xs"
+                    >
+                      <div>
+                        <span className="text-muted-text">Input: </span>
+                        <span className="text-primary-text">{ex.input}</span>
+                      </div>
+                      <div>
+                        <span className="text-muted-text">Output: </span>
+                        <span className="font-semibold text-success">{ex.output}</span>
+                      </div>
+                      {ex.explanation && (
+                        <div className="border-t border-border pt-1.5 text-[11px] leading-relaxed text-muted-text">
+                          {ex.explanation}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </section>
+              )}
+            </article>
           </div>
 
-          {/* PROBLEM */}
-          <div className="space-y-2">
-            <div className="text-xs font-bold text-primary-accent uppercase tracking-wider">
-              PROBLEM
-            </div>
-            <p className="font-sans text-xs sm:text-sm text-primary-text leading-relaxed whitespace-pre-line bg-background p-4 border border-border">
-              {currentQ.content.problemStatement}
-            </p>
-          </div>
+          {/* Secondary: answer entry + code generation */}
+          <div className="space-y-6 lg:col-span-5">
+            {/* Current question answer */}
+            <div className="rounded-md border border-border bg-surface p-5">
+              <SectionLabel>Answer · Question 0{currentQ.questionNumber}</SectionLabel>
+              <p className="mt-1 text-[11px] text-muted-text">
+                Enter the calculated 2-digit answer for this problem sheet.
+              </p>
 
-          {/* INPUT & OUTPUT */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <div className="text-xs font-bold text-muted-text uppercase tracking-wider">
-                INPUT
-              </div>
-              <div className="p-3.5 bg-background border border-border text-xs text-primary-text font-mono leading-relaxed whitespace-pre-wrap">
-                {currentQ.content.inputDescription || 'Supplied via problem specification.'}
+              <div className="mt-4 flex items-center gap-3">
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={2}
+                  aria-label={`Answer for question ${currentQ.questionNumber}`}
+                  value={digitInputs[currentQ.questionNumber] || ''}
+                  onChange={(e) => handleDigitChange(currentQ.questionNumber, e.target.value)}
+                  placeholder="00"
+                  className="w-24 rounded-md border-2 border-border bg-background p-2 text-center font-mono text-xl font-semibold tabular-nums text-primary-accent placeholder:text-muted-text/30 focus:border-primary-accent focus:outline-none"
+                />
+
+                {activeQuestionIdx < questions.length - 1 ? (
+                  <button
+                    type="button"
+                    onClick={() => setActiveQuestionIdx(activeQuestionIdx + 1)}
+                    className="flex items-center gap-1 rounded border border-border px-4 py-2.5 text-xs font-semibold text-primary-text hover:border-primary-accent hover:text-primary-accent"
+                  >
+                    <span>Next (Q0{activeQuestionIdx + 2})</span>
+                    <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      document
+                        .getElementById('code-generation-panel')
+                        ?.scrollIntoView({ behavior: 'smooth' })
+                    }
+                    className="flex items-center gap-1 rounded bg-primary-accent px-4 py-2.5 text-xs font-semibold text-primary-accent-contrast"
+                  >
+                    <span>Review code</span>
+                    <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+                  </button>
+                )}
               </div>
             </div>
 
-            <div className="space-y-1.5">
-              <div className="text-xs font-bold text-muted-text uppercase tracking-wider">
-                OUTPUT
+            {/* Code generation + submission */}
+            <div id="code-generation-panel" className="rounded-md border border-border bg-surface p-5">
+              <div className="mb-3 flex items-center justify-between border-b border-border pb-2">
+                <div className="flex items-center gap-2">
+                  <Key className="h-4 w-4 text-primary-accent" aria-hidden="true" />
+                  <h3 className="text-sm font-semibold uppercase tracking-[0.1em] text-primary-text">
+                    Code generation
+                  </h3>
+                </div>
+                <span className="rounded-sm bg-accent-yellow px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-primary-accent">
+                  12-digit protocol
+                </span>
               </div>
-              <div className="p-3.5 bg-background border border-border text-xs text-primary-text font-mono leading-relaxed">
-                {currentQ.content.outputDescription || '2-digit numeric integer (zero-padded if < 10).'}
-              </div>
-            </div>
-          </div>
 
-          {/* CONSTRAINTS */}
-          {currentQ.content.constraints && currentQ.content.constraints.length > 0 && (
-            <div className="space-y-1.5">
-              <div className="text-xs font-bold text-muted-text uppercase tracking-wider">
-                CONSTRAINTS
-              </div>
-              <ul className="p-3 bg-surface-dark border border-border text-xs text-muted-text space-y-1 list-disc list-inside font-sans">
-                {currentQ.content.constraints.map((c: string, i: number) => (
-                  <li key={i}>{c}</li>
+              <p className="text-xs leading-relaxed text-primary-text">
+                Each question produces a 2-digit answer. Combine the answers from Q1 through Q6, in
+                order, to produce the final 12-digit unlock code.
+              </p>
+
+              {/* Example matrix */}
+              <div className="mt-4 grid grid-cols-4 gap-1.5 rounded-md border border-border bg-background p-3 font-mono text-xs sm:grid-cols-7">
+                {[
+                  ['Q1', '24'], ['Q2', '71'], ['Q3', '08'], ['Q4', '35'],
+                  ['Q5', '62'], ['Q6', '19'],
+                ].map(([q, v]) => (
+                  <div key={q} className="rounded border border-border/70 p-1.5 text-center">
+                    <span className="block text-[10px] text-muted-text">{q}</span>
+                    <span className="font-semibold text-muted-text">{v}</span>
+                  </div>
                 ))}
-              </ul>
-            </div>
-          )}
-
-          {/* EXAMPLE */}
-          {currentQ.content.examples && currentQ.content.examples.length > 0 && (
-            <div className="space-y-2">
-              <div className="text-xs font-bold text-muted-text uppercase tracking-wider">
-                EXAMPLE
+                <div className="col-span-4 rounded border border-primary-accent/40 bg-accent-yellow/25 p-1.5 text-center sm:col-span-1">
+                  <span className="block text-[9px] font-semibold text-primary-accent">Final</span>
+                  <span className="text-[10px] font-semibold text-primary-accent">247108356219</span>
+                </div>
               </div>
-              {currentQ.content.examples.map((ex: any, idx: number) => (
-                <div key={idx} className="p-3.5 bg-background border border-border text-xs space-y-1.5 font-mono">
-                  <div><span className="text-muted-text">Input:</span> <span className="text-primary-text">{ex.input}</span></div>
-                  <div><span className="text-muted-text">Output:</span> <span className="text-primary-accent font-bold">{ex.output}</span></div>
-                  {ex.explanation && (
-                    <div className="text-[11px] text-muted-text font-sans pt-1 border-t border-border/50">
-                      {ex.explanation}
+
+              {/* Assembled key */}
+              <div className="mt-4 space-y-3">
+                <div className="flex justify-between text-[11px] uppercase tracking-[0.1em] text-muted-text">
+                  <span>Your assembled key</span>
+                  <span className="tabular-nums">{combinedCode.length} / 12 digits</span>
+                </div>
+
+                <div className="grid grid-cols-6 gap-2 rounded-md border border-border bg-surface-highlight p-3 text-center">
+                  {[1, 2, 3, 4, 5, 6].map((n) => (
+                    <div key={n} className="flex flex-col">
+                      <span className="text-[10px] text-muted-text">Q0{n}</span>
+                      <span className="font-mono text-sm font-semibold tabular-nums text-primary-accent sm:text-base">
+                        {digitInputs[n] || '--'}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                <form onSubmit={handleSubmit} className="space-y-3">
+                  <label htmlFor="combined-code" className="sr-only">
+                    12-digit unlock code
+                  </label>
+                  <input
+                    id="combined-code"
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={12}
+                    value={combinedCode}
+                    onChange={handleCombinedCodeChange}
+                    placeholder="247108356219"
+                    className="w-full rounded-md border-2 border-border bg-background p-3 text-center font-mono text-lg tracking-[0.2em] text-primary-accent placeholder:text-muted-text/30 focus:border-primary-accent focus:outline-none"
+                  />
+
+                  {submissionError && (
+                    <div
+                      role="alert"
+                      className="flex items-center gap-2 rounded border border-error/40 bg-error/10 p-3 text-xs text-error"
+                    >
+                      <AlertTriangle className="h-4 w-4 shrink-0" aria-hidden="true" />
+                      <span>{submissionError}</span>
                     </div>
                   )}
-                </div>
-              ))}
-            </div>
-          )}
 
-          {/* ANSWER: [ INPUT ] [ SUBMIT / RECORD ] */}
-          <div className="p-4 sm:p-5 bg-surface-dark border-2 border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <div className="text-xs font-bold text-primary-text uppercase tracking-wider">
-                ANSWER (QUESTION 0{currentQ.questionNumber})
+                  <button
+                    type="submit"
+                    disabled={isSubmitting || combinedCode.length !== 12}
+                    className="flex w-full items-center justify-center gap-2 rounded bg-primary-accent px-4 py-3.5 text-xs font-semibold uppercase tracking-[0.1em] text-primary-accent-contrast hover:opacity-90 disabled:opacity-40"
+                  >
+                    <Send className="h-4 w-4" aria-hidden="true" />
+                    <span>
+                      {isSubmitting
+                        ? 'Verifying key…'
+                        : 'Submit 12-digit unlock code'}
+                    </span>
+                  </button>
+                </form>
+
+                <p className="text-[10px] leading-relaxed text-muted-text">
+                  Write and compile your solutions in your own IDE or offline compiler, then enter
+                  each 2-digit result above. This platform only presents problems and submits
+                  answers.
+                </p>
               </div>
-              <div className="text-[11px] text-muted-text font-sans">
-                Enter the calculated 2-digit solution for this problem sheet.
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <input
-                type="text"
-                maxLength={2}
-                value={digitInputs[currentQ.questionNumber] || ''}
-                onChange={(e) => handleDigitChange(currentQ.questionNumber, e.target.value)}
-                placeholder="00"
-                className="w-20 text-center text-xl font-bold bg-background border-2 border-primary-accent/80 text-primary-accent p-2 focus:outline-none focus:border-primary-accent font-mono"
-              />
-
-              {activeQuestionIdx < questions.length - 1 ? (
-                <button
-                  type="button"
-                  onClick={() => setActiveQuestionIdx(activeQuestionIdx + 1)}
-                  className="px-4 py-2.5 bg-surface border border-border hover:border-primary-accent text-xs font-mono text-primary-text hover:text-primary-accent flex items-center gap-1"
-                >
-                  <span>NEXT (Q0{activeQuestionIdx + 2})</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => {
-                    const el = document.getElementById('code-generation-panel');
-                    if (el) el.scrollIntoView({ behavior: 'smooth' });
-                  }}
-                  className="px-4 py-2.5 bg-primary-accent text-primary-accent-contrast text-xs font-mono font-bold flex items-center gap-1"
-                >
-                  <span>REVIEW CODE</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </button>
-              )}
             </div>
           </div>
         </div>
       )}
-
-      {/* ROUND 1 INSTRUCTION PANEL (Directly below question section) */}
-      <div id="code-generation-panel" className="border-2 border-border bg-surface p-5 sm:p-6 space-y-4 shadow-sm">
-        <div className="flex items-center justify-between border-b border-border pb-2">
-          <div className="flex items-center gap-2">
-            <Key className="w-4 h-4 text-primary-accent" />
-            <h3 className="text-sm font-bold text-primary-text uppercase tracking-wider">
-              CODE GENERATION
-            </h3>
-          </div>
-          <span className="text-[10px] text-primary-accent border border-primary-accent/40 px-2 py-0.5 uppercase">
-            12-DIGIT PROTOCOL
-          </span>
-        </div>
-
-        <p className="text-xs text-primary-text font-sans leading-relaxed">
-          Each question produces a 2-digit answer. Combine the answers in <strong className="text-primary-accent font-mono font-normal">Q1 → Q6</strong> order to create the final 12-digit unlock code.
-        </p>
-
-        {/* Compact Example Matrix */}
-        <div className="grid grid-cols-2 sm:grid-cols-7 gap-2 bg-background p-3 border border-border text-xs font-mono">
-          <div className="p-1.5 border border-border/60 text-center"><span className="text-muted-text block text-[10px]">Q1</span> <span className="font-bold text-muted-text">24</span></div>
-          <div className="p-1.5 border border-border/60 text-center"><span className="text-muted-text block text-[10px]">Q2</span> <span className="font-bold text-muted-text">71</span></div>
-          <div className="p-1.5 border border-border/60 text-center"><span className="text-muted-text block text-[10px]">Q3</span> <span className="font-bold text-muted-text">08</span></div>
-          <div className="p-1.5 border border-border/60 text-center"><span className="text-muted-text block text-[10px]">Q4</span> <span className="font-bold text-muted-text">35</span></div>
-          <div className="p-1.5 border border-border/60 text-center"><span className="text-muted-text block text-[10px]">Q5</span> <span className="font-bold text-muted-text">62</span></div>
-          <div className="p-1.5 border border-border/60 text-center"><span className="text-muted-text block text-[10px]">Q6</span> <span className="font-bold text-muted-text">19</span></div>
-          <div className="p-1.5 border border-primary-accent/50 bg-primary-accent/10 text-center col-span-2 sm:col-span-1">
-            <span className="text-primary-accent block text-[9px] font-bold">FINAL:</span>
-            <span className="font-bold text-primary-accent text-[11px]">247108356219</span>
-          </div>
-        </div>
-
-        {/* Current Team Assembly Grid */}
-        <div className="space-y-3 pt-2">
-          <div className="text-[11px] text-muted-text uppercase tracking-wider flex justify-between">
-            <span>YOUR ASSEMBLED KEY:</span>
-            <span>LENGTH: {combinedCode.length} / 12 DIGITS</span>
-          </div>
-
-          <div className="grid grid-cols-6 gap-2 bg-surface-dark p-3 border border-border text-center">
-            {[1, 2, 3, 4, 5, 6].map(n => (
-              <div key={n} className="flex flex-col">
-                <span className="text-[10px] text-muted-text">Q0{n}</span>
-                <span className="text-sm sm:text-base font-bold text-primary-accent">
-                  {digitInputs[n] ? digitInputs[n] : '--'}
-                </span>
-              </div>
-            ))}
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-3">
-            <div className="space-y-1">
-              <input
-                type="text"
-                maxLength={12}
-                value={combinedCode}
-                onChange={handleCombinedCodeChange}
-                placeholder="247108356219"
-                className="w-full bg-background border-2 border-border focus:border-primary-accent p-3 text-center text-lg sm:text-xl tracking-widest font-mono text-primary-accent placeholder:text-muted-text/30"
-              />
-            </div>
-
-            {submissionError && (
-              <div className="p-3 bg-error/10 border border-error text-error text-xs flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4 shrink-0" />
-                <span>{submissionError}</span>
-              </div>
-            )}
-
-            <button
-              type="submit"
-              disabled={isSubmitting || combinedCode.length !== 12}
-              className="w-full py-3.5 bg-primary-accent text-primary-accent-contrast font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 hover:opacity-90 disabled:opacity-40 transition-opacity"
-            >
-              <Send className="w-4 h-4" />
-              <span>{isSubmitting ? 'OFFICIALLY VERIFYING KEY...' : 'SUBMIT 12-DIGIT UNLOCK CODE'}</span>
-            </button>
-          </form>
-        </div>
-      </div>
-
-      {/* OPTIONAL EDITOR (Clearly labeled as optional tool) */}
-      <MonacoOrFallbackEditor
-        title="OPTIONAL SCRATCHPAD / COMPILER"
-        language="cpp"
-        initialCode={`// CODE//LOCK — ROUND 01 SCRATCHPAD
-// You may use this editor or any offline compiler/IDE installed on your system.
-#include <iostream>
-using namespace std;
-
-int main() {
-    // Solve and output your 2-digit answer:
-    cout << "Ready" << endl;
-    return 0;
-}`}
-      />
     </div>
   );
 }

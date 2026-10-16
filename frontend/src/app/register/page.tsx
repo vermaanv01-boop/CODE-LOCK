@@ -5,18 +5,42 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { apiRequest, getContestStatus, storage } from '@/lib/api';
 import { VerifiedStamp } from '@/components/VerifiedStamp';
-import { 
-  FileText, 
-  AlertCircle, 
-  CheckCircle2, 
-  Lock, 
-  ArrowRight, 
-  ShieldCheck,
-  Brain,
-  Code2,
-  Bug,
-  Key
-} from 'lucide-react';
+import { AlertCircle, ArrowRight, Lock, Brain, Code2, Bug, Key } from 'lucide-react';
+
+const ROLES = [
+  {
+    name: 'thinker',
+    label: 'Thinker',
+    roleNo: 'Role 01',
+    icon: Brain,
+    tint: 'bg-accent-blue',
+    description: 'Formulates the mathematical and algorithmic logic from the problem sheets.',
+  },
+  {
+    name: 'coder',
+    label: 'Coder',
+    roleNo: 'Role 02',
+    icon: Code2,
+    tint: 'bg-accent-green',
+    description: 'Implements the Thinker’s analysis in working code.',
+  },
+  {
+    name: 'debugger',
+    label: 'Debugger',
+    roleNo: 'Role 03',
+    icon: Bug,
+    tint: 'bg-accent-pink',
+    description: 'Diagnoses pointer slips, runtime errors, and broken comparators.',
+  },
+  {
+    name: 'supporter',
+    label: 'Supporter',
+    roleNo: 'Role 04',
+    icon: Key,
+    tint: 'bg-accent-yellow',
+    description: 'Controls code assembly, ordering, and official submissions.',
+  },
+] as const;
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -26,7 +50,6 @@ export default function RegisterPage() {
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [successTeam, setSuccessTeam] = useState<any>(null);
 
-  // Form State
   const [formData, setFormData] = useState({
     teamNumber: '',
     teamName: '',
@@ -34,23 +57,23 @@ export default function RegisterPage() {
     thinker: '',
     coder: '',
     debugger: '',
-    supporter: ''
+    supporter: '',
   });
 
   useEffect(() => {
-    getContestStatus().then(res => {
-      setContestStatus(res.status);
-      if (res.status !== 'NOT_STARTED') {
-        setIsLocked(true);
-      }
-    }).catch(() => {});
+    getContestStatus()
+      .then((res) => {
+        setContestStatus(res.status);
+        if (res.status !== 'NOT_STARTED') setIsLocked(true);
+      })
+      .catch(() => {});
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: name === 'teamNumber' ? value.toUpperCase() : value
+      [name]: name === 'teamNumber' ? value.toUpperCase() : value,
     }));
   };
 
@@ -75,14 +98,12 @@ export default function RegisterPage() {
     try {
       const res = await apiRequest('/teams/register', {
         method: 'POST',
-        body: JSON.stringify(formData)
+        body: JSON.stringify(formData),
       });
       storage.setTeam(res.team);
       setSuccessTeam(res.team);
     } catch (err: any) {
-      if (err.data?.error === 'REGISTRATION_LOCKED') {
-        setIsLocked(true);
-      }
+      if (err.data?.error === 'REGISTRATION_LOCKED') setIsLocked(true);
       setErrorMessage(err.message || 'Registration failed. Check organizer constraints.');
     } finally {
       setIsLoading(false);
@@ -91,25 +112,26 @@ export default function RegisterPage() {
 
   if (isLocked) {
     return (
-      <div className="max-w-xl mx-auto my-12 border border-border bg-surface p-8 font-mono select-none text-center space-y-4 shadow-sm">
-        <div className="w-12 h-12 bg-warning/15 border border-warning text-warning mx-auto flex items-center justify-center">
-          <Lock className="w-6 h-6" />
+      <div className="mx-auto my-12 max-w-xl rounded-md border border-border bg-surface p-8 text-center">
+        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-md border border-warning/40 bg-accent-yellow/30 text-warning">
+          <Lock className="h-6 w-6" aria-hidden="true" />
         </div>
-        <h2 className="text-xl font-bold text-primary-text">REGISTRATION LOCKED</h2>
-        <p className="text-xs text-muted-text font-sans max-w-md mx-auto leading-relaxed">
-          The contest has already commenced (Status: <span className="text-warning font-bold">{contestStatus}</span>).
-          New squad registrations are closed. Connect using your pre-assigned team identifier.
+        <h1 className="text-xl font-semibold text-primary-text">Registration locked</h1>
+        <p className="mx-auto mt-2 max-w-md text-xs leading-relaxed text-muted-text">
+          The contest has already commenced (status{' '}
+          <span className="font-semibold text-warning">{contestStatus}</span>). New squad
+          registrations are closed. Connect using your pre-assigned team identifier.
         </p>
-        <div className="pt-4 flex justify-center gap-3">
+        <div className="mt-6 flex justify-center gap-3">
           <Link
             href="/contest"
-            className="px-5 py-2.5 bg-primary-accent text-primary-accent-contrast text-xs font-bold uppercase tracking-wider"
+            className="rounded bg-primary-accent px-5 py-2.5 text-xs font-semibold text-primary-accent-contrast"
           >
-            Go to Team Login →
+            Go to team login →
           </Link>
           <Link
             href="/"
-            className="px-5 py-2.5 border border-border text-xs text-muted-text hover:text-primary-text"
+            className="rounded border border-border px-5 py-2.5 text-xs text-muted-text hover:text-primary-text"
           >
             Home
           </Link>
@@ -120,47 +142,64 @@ export default function RegisterPage() {
 
   if (successTeam) {
     return (
-      <div className="max-w-2xl mx-auto my-8 border-2 border-primary-accent bg-surface p-6 sm:p-10 font-mono select-none space-y-6 shadow-md">
-        <div className="flex items-center justify-between border-b border-border pb-4">
+      <div className="mx-auto my-8 max-w-2xl rounded-md border border-border bg-surface p-6 sm:p-10">
+        <div className="flex items-start justify-between border-b border-border pb-4">
           <div>
-            <div className="text-[10px] text-muted-text tracking-widest uppercase">REGISTRATION SHEET PROCESSED</div>
-            <h2 className="text-2xl font-bold text-primary-accent mt-1">OFFICIAL SQUAD DOSSIER</h2>
+            <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-text">
+              Registration sheet processed
+            </div>
+            <h1 className="mt-1 font-serif text-2xl font-semibold text-primary-accent">
+              Official squad dossier
+            </h1>
           </div>
-          <VerifiedStamp label="REGISTERED ✓" size="md" />
+          <VerifiedStamp label="Registered" size="md" />
         </div>
 
-        <div className="bg-background border border-border p-4 space-y-3">
-          <div className="flex justify-between border-b border-border/60 pb-2">
-            <span className="text-xs text-muted-text">OFFICIAL TEAM IDENTIFIER:</span>
-            <span className="text-lg font-bold text-primary-accent">{successTeam.teamNumber}</span>
+        <dl className="mt-6 divide-y divide-border rounded-md border border-border bg-surface-highlight px-4">
+          <div className="flex items-center justify-between py-3">
+            <dt className="text-xs text-muted-text">Team identifier</dt>
+            <dd className="font-mono text-lg font-semibold text-primary-accent">
+              {successTeam.teamNumber}
+            </dd>
           </div>
-          <div className="flex justify-between border-b border-border/60 pb-2">
-            <span className="text-xs text-muted-text">TEAM NAME:</span>
-            <span className="text-sm font-sans text-primary-text font-semibold">{successTeam.teamName}</span>
+          <div className="flex items-center justify-between py-3">
+            <dt className="text-xs text-muted-text">Team name</dt>
+            <dd className="text-sm font-semibold text-primary-text">{successTeam.teamName}</dd>
           </div>
-          <div className="flex justify-between border-b border-border/60 pb-2">
-            <span className="text-xs text-muted-text">TEAM LEADER:</span>
-            <span className="text-sm font-sans text-primary-text">{successTeam.teamLeader}</span>
+          <div className="flex items-center justify-between py-3">
+            <dt className="text-xs text-muted-text">Team leader</dt>
+            <dd className="text-sm text-primary-text">{successTeam.teamLeader}</dd>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 text-xs">
-            <div><span className="text-muted-text font-bold">THINKER:</span> {successTeam.thinker}</div>
-            <div><span className="text-muted-text font-bold">CODER:</span> {successTeam.coder}</div>
-            <div><span className="text-muted-text font-bold">DEBUGGER:</span> {successTeam.debugger}</div>
-            <div><span className="text-muted-text font-bold">SUPPORTER:</span> {successTeam.supporter}</div>
-          </div>
+        </dl>
+
+        <div className="mt-4 grid grid-cols-1 gap-2 text-xs sm:grid-cols-2">
+          {[
+            ['Thinker', successTeam.thinker],
+            ['Coder', successTeam.coder],
+            ['Debugger', successTeam.debugger],
+            ['Supporter', successTeam.supporter],
+          ].map(([label, value]) => (
+            <div key={label} className="rounded border border-border bg-background px-3 py-2">
+              <span className="text-[10px] font-semibold uppercase tracking-[0.1em] text-muted-text">
+                {label}
+              </span>
+              <div className="text-sm text-primary-text">{value}</div>
+            </div>
+          ))}
         </div>
 
-        <p className="text-xs text-muted-text font-sans">
-          Your credentials are saved on this workstation. Proceed to the contest lobby and wait for the official organizer start signal.
+        <p className="mt-6 text-xs leading-relaxed text-muted-text">
+          Your credentials are saved on this workstation. Proceed to the contest lobby and wait for
+          the organizer&apos;s start signal.
         </p>
 
-        <div className="flex justify-end gap-3 pt-2">
+        <div className="mt-4 flex justify-end">
           <button
             onClick={() => router.push('/contest')}
-            className="px-6 py-2.5 bg-primary-accent text-primary-accent-contrast font-bold text-xs uppercase tracking-wider flex items-center gap-2 hover:opacity-90"
+            className="flex items-center gap-2 rounded bg-primary-accent px-6 py-2.5 text-xs font-semibold text-primary-accent-contrast hover:opacity-90"
           >
-            <span>PROCEED TO CONTEST LOBBY</span>
-            <ArrowRight className="w-4 h-4" />
+            Proceed to contest lobby
+            <ArrowRight className="h-4 w-4" aria-hidden="true" />
           </button>
         </div>
       </div>
@@ -168,226 +207,157 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto my-2 sm:my-6 select-none font-mono">
-      {/* Clean Editorial Technical Registration Form */}
-      <div className="border border-border bg-surface p-5 sm:p-10 shadow-sm relative">
-        {/* Editorial Header */}
-        <div className="flex flex-col sm:flex-row sm:items-start justify-between border-b-2 border-border pb-6 mb-6 gap-4">
+    <div className="mx-auto my-2 max-w-3xl sm:my-6">
+      <div className="rounded-md border border-border bg-surface p-5 sm:p-10">
+        {/* Editorial header */}
+        <div className="mb-6 flex flex-col justify-between border-b-2 border-border pb-6 sm:flex-row sm:items-start">
           <div>
-            <div className="flex items-center gap-2 text-[10px] text-muted-text tracking-widest uppercase mb-1">
-              <FileText className="w-3.5 h-3.5 text-primary-accent" />
-              <span>OFFICIAL REGISTRATION PROTOCOL</span>
+            <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-text">
+              Official registration protocol
             </div>
-            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-primary-text leading-none">
-              CODE//LOCK
+            <h1 className="mt-1 font-serif text-3xl font-semibold tracking-tight text-primary-text sm:text-4xl">
+              CODE<span className="text-muted-text">//</span>LOCK
             </h1>
-            <div className="text-xs tracking-widest text-primary-accent mt-1.5 uppercase font-bold">
-              TEAM REGISTRATION / 2026
+            <div className="mt-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-warning">
+              Team registration · 2026
             </div>
           </div>
-
-          <div className="text-left sm:text-right border-t sm:border-t-0 pt-2 sm:pt-0 border-border">
-            <span className="text-[10px] text-muted-text border border-border px-2 py-1 inline-block bg-surface-highlight">
-              TECHNICAL EVENT FORM
+          <div className="mt-3 border-t border-border pt-3 text-left sm:mt-0 sm:border-t-0 sm:pt-0 sm:text-right">
+            <span className="inline-block rounded-sm border border-border bg-surface-highlight px-2 py-1 text-[10px] text-muted-text">
+              Technical event form
             </span>
-            <div className="text-[10px] text-muted-text/80 mt-1">
-              STATUS: PRE-CONTEST ADMISSION
-            </div>
+            <div className="mt-1 text-[10px] text-muted-text">Status · Pre-contest admission</div>
           </div>
         </div>
 
         {errorMessage && (
-          <div className="mb-6 p-3 bg-error/10 border border-error text-error text-xs flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 shrink-0" />
+          <div
+            role="alert"
+            className="mb-6 flex items-center gap-2 rounded border border-error/40 bg-error/10 p-3 text-xs text-error"
+          >
+            <AlertCircle className="h-4 w-4 shrink-0" aria-hidden="true" />
             <span>{errorMessage}</span>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Section 01: Team Identification */}
-          <div className="space-y-3">
-            <div className="text-xs font-bold text-primary-accent uppercase tracking-wider border-b border-border pb-1 flex justify-between items-center">
-              <span>01. SQUAD IDENTIFICATION</span>
-              <span className="text-[10px] text-muted-text font-normal">REQUIRED</span>
-            </div>
+        <form onSubmit={handleSubmit} className="space-y-8">
+          {/* Section 01 */}
+          <fieldset className="space-y-3">
+            <legend className="flex w-full items-center justify-between border-b border-border pb-1 text-xs font-semibold uppercase tracking-[0.14em] text-primary-accent">
+              <span>01 · Squad identification</span>
+              <span className="text-[10px] font-normal text-muted-text">Required</span>
+            </legend>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
-                <label className="text-[11px] text-muted-text uppercase block mb-1">
-                  TEAM NUMBER <span className="text-primary-accent">*</span>
+                <label htmlFor="teamNumber" className="mb-1 block text-[11px] uppercase text-muted-text">
+                  Team number <span className="text-primary-accent">*</span>
                 </label>
                 <input
+                  id="teamNumber"
                   type="text"
                   name="teamNumber"
                   value={formData.teamNumber}
                   onChange={handleChange}
                   placeholder="e.g. T-027"
                   required
-                  className="w-full bg-background border border-border p-2.5 text-sm font-mono text-primary-text uppercase placeholder:text-muted-text/40 focus:outline-none focus:border-primary-accent"
+                  className="w-full rounded border border-border bg-background p-2.5 font-mono text-sm uppercase text-primary-text placeholder:text-muted-text/40 focus:border-primary-accent focus:outline-none"
                 />
-                <span className="text-[10px] text-muted-text block mt-1">
+                <span className="mt-1 block text-[10px] text-muted-text">
                   Organizer-assigned unique ID.
                 </span>
               </div>
 
               <div>
-                <label className="text-[11px] text-muted-text uppercase block mb-1">
-                  TEAM NAME <span className="text-primary-accent">*</span>
+                <label htmlFor="teamName" className="mb-1 block text-[11px] uppercase text-muted-text">
+                  Team name <span className="text-primary-accent">*</span>
                 </label>
                 <input
+                  id="teamName"
                   type="text"
                   name="teamName"
                   value={formData.teamName}
                   onChange={handleChange}
                   placeholder="e.g. BYTE RAIDERS"
                   required
-                  className="w-full bg-background border border-border p-2.5 text-sm font-sans text-primary-text placeholder:text-muted-text/40 focus:outline-none focus:border-primary-accent"
+                  className="w-full rounded border border-border bg-background p-2.5 text-sm text-primary-text placeholder:text-muted-text/40 focus:border-primary-accent focus:outline-none"
                 />
-                <span className="text-[10px] text-muted-text block mt-1">
-                  Official name displayed on scoreboard.
+                <span className="mt-1 block text-[10px] text-muted-text">
+                  Official name shown on the scoreboard.
                 </span>
               </div>
             </div>
 
             <div>
-              <label className="text-[11px] text-muted-text uppercase block mb-1">
-                TEAM LEADER <span className="text-primary-accent">*</span>
+              <label htmlFor="teamLeader" className="mb-1 block text-[11px] uppercase text-muted-text">
+                Team leader <span className="text-primary-accent">*</span>
               </label>
               <input
+                id="teamLeader"
                 type="text"
                 name="teamLeader"
                 value={formData.teamLeader}
                 onChange={handleChange}
-                placeholder="Full name of designated squad captain"
+                placeholder="Full name of the designated squad captain"
                 required
-                className="w-full bg-background border border-border p-2.5 text-sm font-sans text-primary-text placeholder:text-muted-text/40 focus:outline-none focus:border-primary-accent"
+                className="w-full rounded border border-border bg-background p-2.5 text-sm text-primary-text placeholder:text-muted-text/40 focus:border-primary-accent focus:outline-none"
               />
             </div>
-          </div>
+          </fieldset>
 
-          {/* Section 02: Role Assignment */}
-          <div className="space-y-3 pt-2">
-            <div className="text-xs font-bold text-primary-accent uppercase tracking-wider border-b border-border pb-1 flex justify-between items-center">
-              <span>02. ROLE ASSIGNMENT</span>
-              <span className="text-[10px] text-muted-text font-normal">4 SPECIALISTS</span>
+          {/* Section 02 */}
+          <fieldset className="space-y-3 pt-2">
+            <legend className="flex w-full items-center justify-between border-b border-border pb-1 text-xs font-semibold uppercase tracking-[0.14em] text-primary-accent">
+              <span>02 · Role assignment</span>
+              <span className="text-[10px] font-normal text-muted-text">4 specialists</span>
+            </legend>
+
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              {ROLES.map((role) => {
+                const Icon = role.icon;
+                return (
+                  <div key={role.name} className="overflow-hidden rounded-md border border-border">
+                    <div className={`flex items-center justify-between px-3 py-1.5 ${role.tint}`}>
+                      <div className="flex items-center gap-1.5 text-xs font-semibold text-primary-accent">
+                        <Icon className="h-3.5 w-3.5" aria-hidden="true" />
+                        {role.label}
+                      </div>
+                      <span className="font-mono text-[9px] uppercase tracking-[0.1em] text-primary-accent/80">
+                        {role.roleNo}
+                      </span>
+                    </div>
+                    <div className="space-y-2 bg-surface p-3">
+                      <p className="text-[11px] leading-snug text-muted-text">{role.description}</p>
+                      <input
+                        id={role.name}
+                        type="text"
+                        name={role.name}
+                        value={formData[role.name as keyof typeof formData]}
+                        onChange={handleChange}
+                        placeholder="Participant name"
+                        required
+                        aria-label={`${role.label} participant name`}
+                        className="w-full rounded border border-border bg-background p-2 text-xs text-primary-text placeholder:text-muted-text/40 focus:border-primary-accent focus:outline-none"
+                      />
+                    </div>
+                  </div>
+                );
+              })}
             </div>
+          </fieldset>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* THINKER */}
-              <div className="p-3 bg-surface-dark border border-border space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-primary-text">
-                    <Brain className="w-3.5 h-3.5 text-primary-accent" />
-                    <span>THINKER</span>
-                  </div>
-                  <span className="text-[9px] text-muted-text uppercase border border-border px-1 bg-surface">
-                    ROLE 01
-                  </span>
-                </div>
-                <p className="text-[11px] font-sans text-muted-text leading-tight">
-                  Formulates mathematical and algorithmic logic from the problem sheets.
-                </p>
-                <input
-                  type="text"
-                  name="thinker"
-                  value={formData.thinker}
-                  onChange={handleChange}
-                  placeholder="Participant name"
-                  required
-                  className="w-full bg-background border border-border p-2 text-xs font-sans text-primary-text placeholder:text-muted-text/40 focus:outline-none focus:border-primary-accent"
-                />
-              </div>
-
-              {/* CODER */}
-              <div className="p-3 bg-surface-dark border border-border space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-primary-text">
-                    <Code2 className="w-3.5 h-3.5 text-primary-accent" />
-                    <span>CODER</span>
-                  </div>
-                  <span className="text-[9px] text-muted-text uppercase border border-border px-1 bg-surface">
-                    ROLE 02
-                  </span>
-                </div>
-                <p className="text-[11px] font-sans text-muted-text leading-tight">
-                  Implements algorithmic logic in code based on the Thinker&apos;s analysis.
-                </p>
-                <input
-                  type="text"
-                  name="coder"
-                  value={formData.coder}
-                  onChange={handleChange}
-                  placeholder="Participant name"
-                  required
-                  className="w-full bg-background border border-border p-2 text-xs font-sans text-primary-text placeholder:text-muted-text/40 focus:outline-none focus:border-primary-accent"
-                />
-              </div>
-
-              {/* DEBUGGER */}
-              <div className="p-3 bg-surface-dark border border-border space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-warning">
-                    <Bug className="w-3.5 h-3.5 text-warning" />
-                    <span className="text-primary-text">DEBUGGER</span>
-                  </div>
-                  <span className="text-[9px] text-muted-text uppercase border border-border px-1 bg-surface">
-                    ROLE 03
-                  </span>
-                </div>
-                <p className="text-[11px] font-sans text-muted-text leading-tight">
-                  Diagnoses pointer slips, runtime errors, and broken interval comparators.
-                </p>
-                <input
-                  type="text"
-                  name="debugger"
-                  value={formData.debugger}
-                  onChange={handleChange}
-                  placeholder="Participant name"
-                  required
-                  className="w-full bg-background border border-border p-2 text-xs font-sans text-primary-text placeholder:text-muted-text/40 focus:outline-none focus:border-primary-accent"
-                />
-              </div>
-
-              {/* SUPPORTER */}
-              <div className="p-3 bg-surface-dark border border-border space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-primary-text">
-                    <Key className="w-3.5 h-3.5 text-primary-accent" />
-                    <span>SUPPORTER</span>
-                  </div>
-                  <span className="text-[9px] text-muted-text uppercase border border-border px-1 bg-surface">
-                    ROLE 04
-                  </span>
-                </div>
-                <p className="text-[11px] font-sans text-muted-text leading-tight">
-                  Controls code assembly, ordering, and official portal submissions.
-                </p>
-                <input
-                  type="text"
-                  name="supporter"
-                  value={formData.supporter}
-                  onChange={handleChange}
-                  placeholder="Participant name"
-                  required
-                  className="w-full bg-background border border-border p-2 text-xs font-sans text-primary-text placeholder:text-muted-text/40 focus:outline-none focus:border-primary-accent"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Verification & Submission */}
-          <div className="pt-4 border-t border-border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="text-[11px] text-muted-text font-sans">
-              * By submitting this form, the team confirms role specialization for the competition.
-            </div>
-
+          {/* Submission */}
+          <div className="flex flex-col items-start justify-between gap-4 border-t border-border pt-4 sm:flex-row sm:items-center">
+            <p className="text-[11px] text-muted-text">
+              By submitting this form, the team confirms role specialization for the competition.
+            </p>
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full sm:w-auto px-8 py-3 bg-primary-accent text-primary-accent-contrast font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 hover:opacity-90 transition-opacity disabled:opacity-50"
+              className="flex w-full items-center justify-center gap-2 rounded bg-primary-accent px-8 py-3 text-xs font-semibold uppercase tracking-[0.1em] text-primary-accent-contrast hover:opacity-90 disabled:opacity-50 sm:w-auto"
             >
-              {isLoading ? 'ENROLLING SQUAD...' : 'SUBMIT REGISTRATION SHEET'}
-              <ArrowRight className="w-4 h-4" />
+              {isLoading ? 'Enrolling squad…' : 'Submit registration sheet'}
+              <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </button>
           </div>
         </form>

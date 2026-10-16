@@ -22,7 +22,7 @@
       "debugger": "Sarah Chen",
       "supporter": "Kenji Sato",
       "currentRound": 1,
-      "status": "IN_ROUND_1",
+      "status": "REGISTERED",
       "registeredAt": "2026-10-07T16:27:25.301Z"
     },
     {
@@ -36,7 +36,7 @@
       "debugger": "Ayush Dubey",
       "supporter": "Anusha Sharma",
       "currentRound": 1,
-      "status": "IN_ROUND_1",
+      "status": "REGISTERED",
       "registeredAt": "2026-10-07T16:53:34.208Z"
     },
     {
@@ -50,16 +50,16 @@
       "debugger": "pratiksha",
       "supporter": "prapti",
       "currentRound": 1,
-      "status": "IN_ROUND_1",
+      "status": "REGISTERED",
       "registeredAt": "2026-10-09T16:36:38.807Z"
     }
   ],
   "contest": {
     "id": "contest_main",
-    "status": "ACTIVE",
-    "contestStartTime": "2026-10-09T16:37:14.373Z",
+    "status": "NOT_STARTED",
+    "contestStartTime": null,
     "contestEndTime": null,
-    "round1Status": "ACTIVE",
+    "round1Status": "LOCKED",
     "round2Status": "LOCKED",
     "round3Status": "LOCKED"
   },
