@@ -29,7 +29,12 @@ export default function Round3DashboardPage() {
       try {
         const comp3 = await getRoundCompletion(3, currentTeam.teamNumber);
         setR3(comp3);
-      } catch (err) {
+      } catch (err: any) {
+        if (err?.status === 401 || err?.status === 403) {
+          storage.clearSession();
+          router.replace('/login');
+          return;
+        }
         router.push('/round/3');
         return;
       }
@@ -60,25 +65,11 @@ export default function Round3DashboardPage() {
   if (loading) return <LoadingState label="Generating official final record" />;
 
   const row = leaderboard.find((e) => e.teamNumber === team?.teamNumber);
+  // Per-round durations are stored independently (not cumulative).
   const r1Time = r1?.formattedCompletionTime || row?.formattedRound1Time || '--:--';
-
-  let r2Split = row?.formattedRound2Time || '--:--';
-  if (r1?.completionTimeMs && r2?.completionTimeMs) {
-    const secs = Math.floor(Math.max(0, r2.completionTimeMs - r1.completionTimeMs) / 1000);
-    r2Split = `${Math.floor(secs / 60).toString().padStart(2, '0')}:${(secs % 60)
-      .toString()
-      .padStart(2, '0')}`;
-  }
-
-  let r3Split = row?.formattedRound3Time || '--:--';
-  if (r2?.completionTimeMs && r3?.completionTimeMs) {
-    const secs = Math.floor(Math.max(0, r3.completionTimeMs - r2.completionTimeMs) / 1000);
-    r3Split = `${Math.floor(secs / 60).toString().padStart(2, '0')}:${(secs % 60)
-      .toString()
-      .padStart(2, '0')}`;
-  }
-
-  const totalTime = r3?.formattedCompletionTime || row?.formattedTotalTime || '--:--';
+  const r2Split = r2?.formattedCompletionTime || row?.formattedRound2Time || '--:--';
+  const r3Split = r3?.formattedCompletionTime || row?.formattedRound3Time || '--:--';
+  const totalTime = row?.formattedTotalTime || '--:--';
   const finalRank = row ? row.rank : (r3?.currentPosition || 1);
 
   return (
@@ -123,7 +114,7 @@ export default function Round3DashboardPage() {
           <Stat label="Round 01" value={r1Time} hint="Coding Lock" />
           <Stat label="Round 02" value={r2Split} accent="pink" hint="Debugging" />
           <Stat label="Round 03" value={r3Split} accent="yellow" hint="Final Lock" />
-          <Stat label="Total time" value={totalTime} accent="green" hint="Cumulative" />
+          <Stat label="Total time" value={totalTime} accent="green" hint="Active rounds" />
           <Stat label="Final rank" value={`#${finalRank.toString().padStart(2, '0')}`} accent="blue" hint={`of ${leaderboard.length}`} />
         </div>
 

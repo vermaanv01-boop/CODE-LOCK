@@ -27,6 +27,19 @@ function roundStartOf(contest: any, round: RoundNumber): number | null {
   return raw ? new Date(raw).getTime() : null;
 }
 
+/**
+ * Round eligibility is derived from server-side completion records — never
+ * from a client-invoked "advance" action. A squad has access to Round N when it
+ * has already completed Round N-1 (Round 1 is always reachable).
+ */
+async function canAccessRound(teamId: string, team: any, roundNum: RoundNumber): Promise<boolean> {
+  if (roundNum === 1) return true;
+  if (team.currentRound >= roundNum) return true;
+  const previous = (roundNum - 1) as RoundNumber;
+  const cleared = await dataStore.getRoundCompletion(teamId, previous);
+  return !!cleared;
+}
+
 // GET questions for a round (authenticated, lifecycle + progression guarded)
 roundsRouter.get('/:round', requireTeam, async (req: AuthRequest, res: Response) => {
   try {
@@ -51,11 +64,12 @@ roundsRouter.get('/:round', requireTeam, async (req: AuthRequest, res: Response)
       return res.status(404).json({ error: 'Team not found' });
     }
 
-    // Enforce round progression for this team.
-    if (team.currentRound < roundNum) {
+    // Enforce round eligibility from authoritative completion records.
+    const teamId = (team._id || team.id).toString();
+    if (!(await canAccessRound(teamId, team, roundNum))) {
       return res.status(403).json({
         error: 'ROUND_LOCKED',
-        message: `Round ${roundNum} is locked. You must complete Round ${team.currentRound} first.`,
+        message: `Round ${roundNum} is locked. Complete Round ${roundNum - 1} first.`,
         currentRound: team.currentRound
       });
     }
@@ -94,11 +108,11 @@ roundsRouter.post('/:round/submit', requireTeam, async (req: AuthRequest, res: R
     }
     const teamId = (team._id || team.id).toString();
 
-    // Route Guard: verify team is permitted to submit this round
-    if (team.currentRound < roundNum) {
+    // Route Guard: verify team is eligible to submit this round
+    if (!(await canAccessRound(teamId, team, roundNum))) {
       return res.status(403).json({
         error: 'ROUND_LOCKED',
-        message: `Round ${roundNum} is locked. Complete Round ${team.currentRound} first.`
+        message: `Round ${roundNum} is locked. Complete Round ${roundNum - 1} first.`
       });
     }
 

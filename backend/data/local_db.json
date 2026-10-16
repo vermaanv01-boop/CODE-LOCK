@@ -59,9 +59,12 @@
     "status": "NOT_STARTED",
     "contestStartTime": null,
     "contestEndTime": null,
-    "round1Status": "LOCKED",
+    "round1Status": "READY",
     "round2Status": "LOCKED",
-    "round3Status": "LOCKED"
+    "round3Status": "LOCKED",
+    "round1StartedAt": null,
+    "round2StartedAt": null,
+    "round3StartedAt": null
   },
   "questions": [
     {

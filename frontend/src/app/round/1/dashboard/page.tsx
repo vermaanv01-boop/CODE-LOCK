@@ -28,7 +28,12 @@ export default function Round1DashboardPage() {
       try {
         const comp = await getRoundCompletion(1, currentTeam.teamNumber);
         setCompletion(comp);
-      } catch (err) {
+      } catch (err: any) {
+        if (err?.status === 401 || err?.status === 403) {
+          storage.clearSession();
+          router.replace('/login');
+          return;
+        }
         router.push('/round/1');
         return;
       }
@@ -50,12 +55,17 @@ export default function Round1DashboardPage() {
     try {
       await advanceRound(1, team.teamNumber);
       storage.setTeam({ ...team, currentRound: 2, status: 'IN_ROUND_2' });
-      router.push('/round/2');
     } catch (err: any) {
-      router.push('/round/2');
+      if (err?.status === 401 || err?.status === 403) {
+        storage.clearSession();
+        router.replace('/login');
+        return;
+      }
     } finally {
       setIsAdvancing(false);
     }
+    // Round 02 opens on the organizer's signal — return to the dashboard to wait.
+    router.push('/contest');
   };
 
   if (loading) return <LoadingState label="Verifying Round 01 record" />;
@@ -99,7 +109,7 @@ export default function Round1DashboardPage() {
           <Stat label="Team" value={completion?.teamNumber || team?.teamNumber} accent="green" />
           <Stat label="Team name" value={completion?.teamName || team?.teamName} />
           <Stat label="Round time" value={roundTime} hint="Coding Lock" />
-          <Stat label="Total time" value={totalTime} accent="green" hint="Cumulative" />
+          <Stat label="Total time" value={totalTime} accent="green" hint="Active rounds" />
           <Stat label="Questions" value="06 / 06" hint="Completed" />
           <Stat label="Position" value={`#${currentPos.toString().padStart(2, '0')}`} accent="yellow" hint={`of ${leaderboard.length}`} />
         </div>
@@ -107,15 +117,15 @@ export default function Round1DashboardPage() {
         {/* Continue */}
         <div className="flex flex-col items-start justify-between gap-4 border-t border-border pt-6 sm:flex-row sm:items-center">
           <p className="max-w-xl text-xs leading-relaxed text-muted-text">
-            Round 02 presents broken source files with runtime exceptions. Begin triage with your
-            assigned Debugger.
+            Round 02 presents broken source files with runtime exceptions. Return to the dashboard —
+            the organizer activates Round 02 when squads are ready.
           </p>
           <button
             onClick={handleContinue}
             disabled={isAdvancing}
             className="flex w-full shrink-0 items-center justify-center gap-2 rounded bg-primary-accent px-8 py-3.5 text-xs font-semibold uppercase tracking-[0.1em] text-primary-accent-contrast hover:opacity-90 disabled:opacity-50 sm:w-auto"
           >
-            <span>{isAdvancing ? 'Initializing Gate 02…' : 'Proceed to Round 02'}</span>
+            <span>{isAdvancing ? 'Synchronizing…' : 'Return to dashboard'}</span>
             <ArrowRight className="h-4 w-4" aria-hidden="true" />
           </button>
         </div>
