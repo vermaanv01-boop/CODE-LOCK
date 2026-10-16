@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { apiRequest, storage, getAdminLeaderboard } from '@/lib/api';
+import { apiRequest, storage, getAdminLeaderboard, startRound } from '@/lib/api';
 import { LeaderboardTable } from '@/components/LeaderboardTable';
 import { 
   Shield, 
@@ -73,6 +73,28 @@ export default function AdminControlRoomPage() {
       fetchDashboard();
     } catch (err: any) {
       setMsg({ type: 'error', text: err.message || 'Failed to start contest' });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleStartRound = async (round: number) => {
+    if (
+      !confirm(
+        `CONFIRM: Activate Round 0${round}? This releases the independent round timer and unlocks the challenge for all eligible squads.`
+      )
+    ) {
+      return;
+    }
+
+    setActionLoading(true);
+    setMsg(null);
+    try {
+      await startRound(round);
+      setMsg({ type: 'success', text: `ROUND 0${round} IS NOW ACTIVE. Independent timer running.` });
+      fetchDashboard();
+    } catch (err: any) {
+      setMsg({ type: 'error', text: err.message || `Failed to start Round 0${round}` });
     } finally {
       setActionLoading(false);
     }
@@ -252,73 +274,94 @@ export default function AdminControlRoomPage() {
 
           {/* Stage Status */}
           <div className="grid grid-cols-3 gap-3 pt-1">
-            <div className="p-2.5 border border-border bg-background flex items-center justify-between">
-              <span className="text-[11px] text-muted-text">ROUND 01</span>
-              <span
-                className={`text-[10px] px-1.5 py-0.2 font-bold uppercase border ${
-                  contest?.round1Status === 'ACTIVE'
-                    ? 'text-primary-accent border-primary-accent bg-primary-accent/10'
-                    : 'text-muted-text border-border'
-                }`}
-              >
-                {contest?.round1Status || 'LOCKED'}
-              </span>
-            </div>
-
-            <div className="p-2.5 border border-border bg-background flex items-center justify-between">
-              <span className="text-[11px] text-muted-text">ROUND 02</span>
-              <span
-                className={`text-[10px] px-1.5 py-0.2 font-bold uppercase border ${
-                  contest?.status === 'ACTIVE'
-                    ? 'text-warning border-warning bg-warning/10'
-                    : 'text-muted-text border-border'
-                }`}
-              >
-                {contest?.status === 'ACTIVE' ? 'PROGRESSIVE' : 'LOCKED'}
-              </span>
-            </div>
-
-            <div className="p-2.5 border border-border bg-background flex items-center justify-between">
-              <span className="text-[11px] text-muted-text">ROUND 03</span>
-              <span
-                className={`text-[10px] px-1.5 py-0.2 font-bold uppercase border ${
-                  contest?.status === 'ACTIVE'
-                    ? 'text-primary-accent border-primary-accent bg-primary-accent/10'
-                    : 'text-muted-text border-border'
-                }`}
-              >
-                {contest?.status === 'ACTIVE' ? 'PROGRESSIVE' : 'LOCKED'}
-              </span>
-            </div>
+            {([
+              ['ROUND 01', contest?.round1Status],
+              ['ROUND 02', contest?.round2Status],
+              ['ROUND 03', contest?.round3Status],
+            ] as [string, string | undefined][]).map(([label, rStatus]) => (
+              <div key={label} className="p-2.5 border border-border bg-background flex items-center justify-between">
+                <span className="text-[11px] text-muted-text">{label}</span>
+                <span
+                  className={`text-[10px] px-1.5 py-0.2 font-bold uppercase border ${
+                    rStatus === 'ACTIVE'
+                      ? 'text-primary-accent border-primary-accent bg-primary-accent/10'
+                      : rStatus === 'READY'
+                      ? 'text-warning border-warning bg-warning/10'
+                      : rStatus === 'COMPLETED'
+                      ? 'text-muted-text border-border bg-muted-text/10'
+                      : 'text-muted-text border-border'
+                  }`}
+                >
+                  {rStatus || 'LOCKED'}
+                </span>
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* Primary Controls (4 Cols) */}
+        {/* ROUND MANAGEMENT (4 Cols) */}
         <div className="md:col-span-4 border-2 border-border bg-surface p-5 sm:p-6 flex flex-col justify-between space-y-4 shadow-sm">
           <div>
             <div className="text-[10px] text-muted-text uppercase tracking-widest font-bold">
-              AUTHORITATIVE ACTION
+              ROUND MANAGEMENT
             </div>
-            <h3 className="text-base font-bold text-primary-text mt-1">START DISPATCH</h3>
+            <h3 className="text-base font-bold text-primary-text mt-1">DISPATCH ROUNDS</h3>
             <p className="text-xs text-muted-text font-sans mt-2 leading-relaxed">
-              Activating the contest locks team registration and starts the synchronized timer.
+              Each round runs on its own independent timer. Activate a round when its squads are ready.
             </p>
           </div>
 
-          <div className="space-y-3">
-            {contest?.status !== 'ACTIVE' ? (
+          <div className="space-y-2">
+            {([1, 2, 3] as const).map((n) => {
+              const rStatus = contest?.[`round${n}Status`] as string | undefined;
+              const isReady = rStatus === 'READY';
+              const isActive = rStatus === 'ACTIVE';
+              const isCompleted = rStatus === 'COMPLETED';
+              return (
+                <div key={n} className="flex items-center gap-2 border border-border bg-background p-2">
+                  <span className="flex-1 text-xs font-bold text-primary-text">ROUND 0{n}</span>
+                  <span
+                    className={`text-[10px] px-1.5 py-0.5 font-bold uppercase border ${
+                      isActive
+                        ? 'text-primary-accent border-primary-accent bg-primary-accent/10'
+                        : isReady
+                        ? 'text-warning border-warning bg-warning/10'
+                        : 'text-muted-text border-border'
+                    }`}
+                  >
+                    {rStatus || 'LOCKED'}
+                  </span>
+                  {isReady ? (
+                    <button
+                      onClick={() => handleStartRound(n)}
+                      disabled={actionLoading}
+                      className="px-3 py-1.5 bg-primary-accent text-primary-accent-contrast font-bold text-[11px] uppercase tracking-wider flex items-center gap-1 hover:opacity-90 disabled:opacity-50"
+                    >
+                      <Play className="w-3 h-3 fill-current" />
+                      START
+                    </button>
+                  ) : isActive ? (
+                    <span className="px-3 py-1.5 text-[11px] font-bold text-primary-accent">● LIVE</span>
+                  ) : isCompleted ? (
+                    <span className="px-3 py-1.5 text-[11px] font-bold text-muted-text">DONE</span>
+                  ) : (
+                    <span className="px-3 py-1.5 text-[11px] text-muted-text">LOCKED</span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="space-y-3 border-t border-border pt-3">
+            {contest?.status === 'NOT_STARTED' && (
               <button
                 onClick={handleStartContest}
                 disabled={actionLoading}
-                className="w-full py-4 bg-primary-accent text-primary-accent-contrast font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2 hover:opacity-90 disabled:opacity-50 transition-opacity shadow-sm"
+                className="w-full py-3 bg-primary-accent text-primary-accent-contrast font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2 hover:opacity-90 disabled:opacity-50 transition-opacity shadow-sm"
               >
                 <Play className="w-4 h-4 fill-current" />
                 <span>[ START CONTEST ]</span>
               </button>
-            ) : (
-              <div className="p-3 bg-primary-accent/15 border border-primary-accent text-primary-accent text-xs text-center font-bold">
-                ● CONTEST IS RUNNING
-              </div>
             )}
 
             <button

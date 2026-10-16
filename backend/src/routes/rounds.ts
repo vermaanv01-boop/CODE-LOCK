@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { dataStore } from '../services/store.js';
 import { calculateLeaderboard } from '../services/leaderboard.js';
 import { RoundNumber } from '@shared/types';
+import { requireTeam, AuthRequest } from '../middleware/auth.js';
 
 export const roundsRouter = Router();
 
@@ -17,8 +18,17 @@ function getParam(param: string | string[] | undefined): string {
   return param || '';
 }
 
-// GET questions for a round (Sanitized, route guard verified)
-roundsRouter.get('/:round', async (req: Request, res: Response) => {
+function roundStatusOf(contest: any, round: RoundNumber): string {
+  return contest[`round${round}Status`] || 'LOCKED';
+}
+
+function roundStartOf(contest: any, round: RoundNumber): number | null {
+  const raw = contest[`round${round}StartedAt`];
+  return raw ? new Date(raw).getTime() : null;
+}
+
+// GET questions for a round (authenticated, lifecycle + progression guarded)
+roundsRouter.get('/:round', requireTeam, async (req: AuthRequest, res: Response) => {
   try {
     const roundParam = getParam(req.params.round);
     const roundNum = parseInt(roundParam, 10) as RoundNumber;
@@ -27,32 +37,34 @@ roundsRouter.get('/:round', async (req: Request, res: Response) => {
     }
 
     const contest = await dataStore.getContest();
-    if (contest.status !== 'ACTIVE' && contest.status !== 'COMPLETED') {
+    const roundStatus = roundStatusOf(contest, roundNum);
+    if (roundStatus !== 'ACTIVE' && roundStatus !== 'COMPLETED') {
       return res.status(403).json({
-        error: 'CONTEST_NOT_ACTIVE',
-        message: 'The contest has not started yet. Round access is locked.'
+        error: 'ROUND_NOT_ACTIVE',
+        message: `Round 0${roundNum} has not been started by the organizer yet.`,
+        roundStatus
       });
     }
 
-    const teamNumberQuery = req.query.teamNumber;
-    const teamNumber = (typeof teamNumberQuery === 'string' ? teamNumberQuery : '') || (req.headers['x-team-number'] as string);
-    if (teamNumber) {
-      const team = await dataStore.getTeamByNumber(teamNumber);
-      if (team) {
-        // Enforce round progression
-        if (team.currentRound < roundNum) {
-          return res.status(403).json({
-            error: 'ROUND_LOCKED',
-            message: `Round ${roundNum} is locked. You must complete Round ${team.currentRound} first.`,
-            currentRound: team.currentRound
-          });
-        }
-      }
+    const team = await dataStore.getTeamByNumber(req.authenticatedTeamNumber || '');
+    if (!team) {
+      return res.status(404).json({ error: 'Team not found' });
+    }
+
+    // Enforce round progression for this team.
+    if (team.currentRound < roundNum) {
+      return res.status(403).json({
+        error: 'ROUND_LOCKED',
+        message: `Round ${roundNum} is locked. You must complete Round ${team.currentRound} first.`,
+        currentRound: team.currentRound
+      });
     }
 
     const questions = await dataStore.getQuestionsByRound(roundNum, true);
     return res.json({
       round: roundNum,
+      roundStatus,
+      startedAt: roundStartOf(contest, roundNum),
       questions
     });
   } catch (err: any) {
@@ -61,7 +73,7 @@ roundsRouter.get('/:round', async (req: Request, res: Response) => {
 });
 
 // SUBMIT full round unlock code
-roundsRouter.post('/:round/submit', async (req: Request, res: Response) => {
+roundsRouter.post('/:round/submit', requireTeam, async (req: AuthRequest, res: Response) => {
   try {
     const roundParam = getParam(req.params.round);
     const roundNum = parseInt(roundParam, 10) as RoundNumber;
@@ -69,24 +81,17 @@ roundsRouter.post('/:round/submit', async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Invalid round number' });
     }
 
-    const { teamNumber, code } = req.body;
-    if (!teamNumber || !code) {
-      return res.status(400).json({ error: 'Team number and unlock code are required' });
+    const { code } = req.body;
+    if (!code) {
+      return res.status(400).json({ error: 'Unlock code is required' });
     }
 
-    const contest = await dataStore.getContest();
-    if (contest.status !== 'ACTIVE') {
-      return res.status(403).json({
-        error: 'CONTEST_NOT_ACTIVE',
-        message: 'Contest is not active.'
-      });
-    }
-
+    // Authoritative identity from the verified team token.
+    const teamNumber = req.authenticatedTeamNumber || '';
     const team = await dataStore.getTeamByNumber(teamNumber);
     if (!team) {
       return res.status(404).json({ error: 'Team not found' });
     }
-
     const teamId = (team._id || team.id).toString();
 
     // Route Guard: verify team is permitted to submit this round
@@ -97,7 +102,7 @@ roundsRouter.post('/:round/submit', async (req: Request, res: Response) => {
       });
     }
 
-    // Check if team has already completed this round
+    // Already completed? Return the frozen original record (immutable).
     const existingComp = await dataStore.getRoundCompletion(teamId, roundNum);
     if (existingComp) {
       return res.json({
@@ -110,10 +115,27 @@ roundsRouter.post('/:round/submit', async (req: Request, res: Response) => {
       });
     }
 
-    // Official server time calculation
+    const contest = await dataStore.getContest();
+    const roundStatus = roundStatusOf(contest, roundNum);
+    if (roundStatus !== 'ACTIVE') {
+      return res.status(403).json({
+        error: roundStatus === 'COMPLETED' ? 'ROUND_CLOSED' : 'ROUND_NOT_ACTIVE',
+        message: `Round 0${roundNum} is not currently active.`,
+        roundStatus
+      });
+    }
+
+    // Official per-round server time. The start timestamp is persisted by the
+    // administrator activation; client clocks are never trusted.
+    const roundStartMs = roundStartOf(contest, roundNum);
+    if (!roundStartMs) {
+      return res.status(403).json({
+        error: 'ROUND_NOT_STARTED',
+        message: `Round 0${roundNum} has no authoritative start timestamp.`
+      });
+    }
     const now = Date.now();
-    const startTimeMs = contest.contestStartTime ? new Date(contest.contestStartTime).getTime() : now;
-    const elapsedMs = Math.max(0, now - startTimeMs);
+    const durationMs = Math.max(0, now - roundStartMs);
 
     // Fetch the official expected code for this round
     const expectedCode = await dataStore.getRoundCombinedCode(roundNum);
@@ -138,12 +160,12 @@ roundsRouter.post('/:round/submit', async (req: Request, res: Response) => {
       });
     }
 
-    // Round is successfully completed!
+    // Round is successfully completed! Freeze the per-round duration.
     await dataStore.recordRoundCompletion({
       teamId,
       round: roundNum,
       completedAt: new Date(now),
-      elapsedTimeMs: elapsedMs
+      elapsedTimeMs: durationMs
     });
 
     // Update team status and current round
@@ -155,20 +177,27 @@ roundsRouter.post('/:round/submit', async (req: Request, res: Response) => {
       await dataStore.updateTeamRound(teamId, 3, 'FINISHED');
     }
 
+    // Make the next round READY (awaiting explicit administrator activation).
+    await dataStore.promoteNextRound(roundNum);
+    // Derive contest-level round completion when all teams are done.
+    await dataStore.refreshRoundLifecycle();
+
     // Calculate updated position on leaderboard
     const leaderboard = await calculateLeaderboard();
     const rankEntry = leaderboard.find(e => e.teamNumber === team.teamNumber);
     const currentPosition = rankEntry ? rankEntry.rank : 1;
 
-    console.log(`[ROUND ${roundNum}] Team ${team.teamNumber} unlocked at ${formatDuration(elapsedMs)} (Rank #${currentPosition})`);
+    console.log(
+      `[ROUND ${roundNum}] Team ${team.teamNumber} unlocked in ${formatDuration(durationMs)} (Rank #${currentPosition})`
+    );
 
     return res.json({
       success: true,
       message: `Round 0${roundNum} successfully unlocked and verified.`,
       round: roundNum,
       completed: true,
-      completionTimeMs: elapsedMs,
-      formattedCompletionTime: formatDuration(elapsedMs),
+      completionTimeMs: durationMs,
+      formattedCompletionTime: formatDuration(durationMs),
       currentPosition
     });
   } catch (err: any) {
@@ -178,16 +207,12 @@ roundsRouter.post('/:round/submit', async (req: Request, res: Response) => {
 });
 
 // UNLOCK / ADVANCE TO NEXT ROUND
-roundsRouter.post('/:round/advance', async (req: Request, res: Response) => {
+roundsRouter.post('/:round/advance', requireTeam, async (req: AuthRequest, res: Response) => {
   try {
     const roundParam = getParam(req.params.round);
     const currentRoundNum = parseInt(roundParam, 10) as RoundNumber;
-    const { teamNumber } = req.body;
-    if (!teamNumber) {
-      return res.status(400).json({ error: 'Team number is required' });
-    }
 
-    const team = await dataStore.getTeamByNumber(teamNumber);
+    const team = await dataStore.getTeamByNumber(req.authenticatedTeamNumber || '');
     if (!team) {
       return res.status(404).json({ error: 'Team not found' });
     }
@@ -226,17 +251,13 @@ roundsRouter.post('/:round/advance', async (req: Request, res: Response) => {
   }
 });
 
-// GET ROUND COMPLETION DETAILS FOR A TEAM
-roundsRouter.get('/:round/completion', async (req: Request, res: Response) => {
+// GET ROUND COMPLETION DETAILS FOR THE AUTHENTICATED TEAM
+roundsRouter.get('/:round/completion', requireTeam, async (req: AuthRequest, res: Response) => {
   try {
     const roundParam = getParam(req.params.round);
     const roundNum = parseInt(roundParam, 10) as RoundNumber;
-    const teamNumber = req.query.teamNumber as string;
-    if (!teamNumber) {
-      return res.status(400).json({ error: 'Team number is required' });
-    }
 
-    const team = await dataStore.getTeamByNumber(teamNumber);
+    const team = await dataStore.getTeamByNumber(req.authenticatedTeamNumber || '');
     if (!team) {
       return res.status(404).json({ error: 'Team not found' });
     }

@@ -2,12 +2,14 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { getRoundQuestions, submitRoundCode, getContestStatus, storage } from '@/lib/api';
+import { getRoundQuestions, submitRoundCode, storage } from '@/lib/api';
+import { useContestStatus } from '@/lib/contest-context';
 import { LoadingState, SectionLabel } from '@/components/ui';
 import { Key, AlertTriangle, Send, ArrowRight, Clock, Check } from 'lucide-react';
 
 export default function Round1Page() {
   const router = useRouter();
+  const { rounds, loading: statusLoading } = useContestStatus();
   const [team, setTeam] = useState<any>(null);
   const [questions, setQuestions] = useState<any[]>([]);
   const [activeQuestionIdx, setActiveQuestionIdx] = useState<number>(0);
@@ -18,50 +20,67 @@ export default function Round1Page() {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [submissionError, setSubmissionError] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(true);
-  const [serverTimeStr, setServerTimeStr] = useState<string>('00:00:00');
+  const [now, setNow] = useState<number>(Date.now());
+  const [roundElapsedStr, setRoundElapsedStr] = useState<string>('00:00:00');
 
+  const roundState = rounds[1];
+
+  // Load the problem set once the round is authoritatively ACTIVE. Lifecycle
+  // violations and expired sessions are pushed back to the correct surface.
   useEffect(() => {
     const currentTeam = storage.getTeam();
     if (!currentTeam) {
-      router.push('/contest');
+      router.replace('/login');
       return;
     }
     setTeam(currentTeam);
 
-    let startTime: number | null = null;
+    if (statusLoading) return;
+    const st = roundState?.status;
+    if (st === 'COMPLETED') {
+      router.replace('/round/1/dashboard');
+      return;
+    }
+    if (st !== 'ACTIVE') {
+      router.replace('/contest');
+      return;
+    }
 
-    getContestStatus()
-      .then((statusRes) => {
-        if (statusRes.status !== 'ACTIVE' && statusRes.status !== 'COMPLETED') {
-          router.push('/contest');
-          return;
+    getRoundQuestions(1, currentTeam.teamNumber)
+      .then((res) => setQuestions(res.questions || []))
+      .catch((err) => {
+        const e = err?.data?.error;
+        if (err?.status === 401 || err?.status === 403) {
+          storage.clearSession();
+          router.replace('/login');
+        } else if (
+          e === 'ROUND_LOCKED' ||
+          e === 'ROUND_NOT_ACTIVE' ||
+          e === 'ROUND_NOT_STARTED' ||
+          e === 'ROUND_CLOSED'
+        ) {
+          router.replace('/contest');
         }
-        if (statusRes.contestStartTime) startTime = statusRes.contestStartTime;
-
-        getRoundQuestions(1, currentTeam.teamNumber)
-          .then((res) => setQuestions(res.questions || []))
-          .catch((err) => {
-            if (err.data?.error === 'ROUND_LOCKED') router.push('/contest');
-          })
-          .finally(() => setLoading(false));
       })
-      .catch(() => setLoading(false));
+      .finally(() => setLoading(false));
+  }, [router, statusLoading, roundState?.status]);
 
-    const timerInterval = setInterval(() => {
-      if (startTime) {
-        const diff = Math.max(0, Date.now() - startTime);
-        const secs = Math.floor(diff / 1000);
-        const h = Math.floor(secs / 3600);
-        const m = Math.floor((secs % 3600) / 60);
-        const s = secs % 60;
-        setServerTimeStr(
-          [h, m, s].map((n) => n.toString().padStart(2, '0')).join(':')
-        );
-      }
-    }, 1000);
+  // Independent per-round clock — derived only from this round's server start.
+  useEffect(() => {
+    const tick = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(tick);
+  }, []);
 
-    return () => clearInterval(timerInterval);
-  }, [router]);
+  useEffect(() => {
+    const startedAt = roundState?.startedAt;
+    if (roundState?.status === 'ACTIVE' && startedAt != null) {
+      const secs = Math.floor(Math.max(0, now - startedAt) / 1000);
+      const h = Math.floor(secs / 3600);
+      const m = Math.floor((secs % 3600) / 60);
+      const s = secs % 60;
+      setRoundElapsedStr([h, m, s].map((n) => n.toString().padStart(2, '0')).join(':'));
+    }
+  }, [now, roundState?.status, roundState?.startedAt]);
 
   const handleDigitChange = (qNum: number, val: string) => {
     const cleaned = val.replace(/\D/g, '').slice(0, 2);
@@ -103,6 +122,16 @@ export default function Round1Page() {
         router.push('/round/1/dashboard');
       }
     } catch (err: any) {
+      if (err?.status === 401 || err?.status === 403) {
+        storage.clearSession();
+        router.replace('/login');
+        return;
+      }
+      const e = err?.data?.error;
+      if (e === 'ROUND_NOT_ACTIVE' || e === 'ROUND_CLOSED' || e === 'ROUND_NOT_STARTED') {
+        router.replace('/contest');
+        return;
+      }
       setSubmissionError(err.message || 'Verification failed. The unlock code entered is incorrect.');
     } finally {
       setIsSubmitting(false);
@@ -139,10 +168,10 @@ export default function Round1Page() {
             <div className="rounded border border-border bg-surface-highlight px-3 py-2">
               <div className="flex items-center gap-1 text-[10px] uppercase tracking-[0.1em] text-muted-text">
                 <Clock className="h-2.5 w-2.5" aria-hidden="true" />
-                Server time
+                Round time
               </div>
               <div className="mt-0.5 font-mono font-semibold tabular-nums text-primary-accent">
-                {serverTimeStr}
+                {roundElapsedStr}
               </div>
             </div>
           </div>

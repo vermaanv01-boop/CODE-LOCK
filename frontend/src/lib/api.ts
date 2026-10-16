@@ -32,6 +32,18 @@ export const storage = {
     if (typeof window === 'undefined') return;
     localStorage.removeItem('codelock_team');
   },
+  getTeamToken: () => {
+    if (typeof window === 'undefined') return null;
+    return localStorage.getItem('codelock_team_token');
+  },
+  setTeamToken: (token: string) => {
+    if (typeof window === 'undefined') return;
+    localStorage.setItem('codelock_team_token', token);
+  },
+  clearTeamToken: () => {
+    if (typeof window === 'undefined') return;
+    localStorage.removeItem('codelock_team_token');
+  },
   getAdminToken: () => {
     if (typeof window === 'undefined') return null;
     return localStorage.getItem('codelock_admin_token');
@@ -43,8 +55,17 @@ export const storage = {
   clearAdminToken: () => {
     if (typeof window === 'undefined') return;
     localStorage.removeItem('codelock_admin_token');
+  },
+  // Full contestant session teardown.
+  clearSession: () => {
+    storage.clearTeam();
+    storage.clearTeamToken();
   }
 };
+
+// Administrator-only endpoints. These must carry the admin bearer token; a
+// contestant (team) session must never be able to authorize them.
+const ADMIN_ENDPOINT = /^\/(auth\/admin|contest\/start|contest\/reset|contest\/round\/\d+\/start|leaderboard\/admin)/;
 
 export async function apiRequest<T = any>(
   endpoint: string,
@@ -58,9 +79,18 @@ export async function apiRequest<T = any>(
     ...(options.headers as Record<string, string> || {})
   };
 
-  const adminToken = storage.getAdminToken();
-  if (adminToken && !headers['Authorization']) {
-    headers['Authorization'] = `Bearer ${adminToken}`;
+  // Role-isolated authorization: exactly one credential is attached per
+  // request. Admin endpoints use the admin token; all other authenticated
+  // requests use the contestant (team) token. Neither role can authorize the
+  // other's operations.
+  if (!headers['Authorization']) {
+    if (ADMIN_ENDPOINT.test(endpoint)) {
+      const adminToken = storage.getAdminToken();
+      if (adminToken) headers['Authorization'] = `Bearer ${adminToken}`;
+    } else {
+      const teamToken = storage.getTeamToken();
+      if (teamToken) headers['Authorization'] = `Bearer ${teamToken}`;
+    }
   }
 
   const team = storage.getTeam();
@@ -97,6 +127,11 @@ export async function getLeaderboard() {
 
 export async function getAdminLeaderboard() {
   return await apiRequest('/leaderboard/admin');
+}
+
+// Admin: activate an independent round (1 | 2 | 3).
+export async function startRound(round: number) {
+  return await apiRequest(`/contest/round/${round}/start`, { method: 'POST' });
 }
 
 export async function submitRoundCode(round: number, teamNumber: string, code: string) {

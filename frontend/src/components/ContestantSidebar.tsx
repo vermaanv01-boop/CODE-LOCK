@@ -21,8 +21,8 @@ interface NavItem {
   label: string;
   sublabel?: string;
   icon: React.ComponentType<{ className?: string }>;
-  /** When provided, the item is shown/locked based on this predicate. */
-  round?: number;
+  /** When provided, the item is shown/locked based on this round's lifecycle. */
+  round?: 1 | 2 | 3;
   requiresNotStarted?: boolean;
 }
 
@@ -35,31 +35,45 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/register', label: 'Register', sublabel: 'Before start', icon: FileText, requiresNotStarted: true },
 ];
 
+// The contestant navigation is only meaningful inside the contestant
+// workspace. Public (landing/login/register) and administrator surfaces have
+// their own hierarchy.
+function isWorkspaceRoute(pathname: string): boolean {
+  return (
+    pathname.startsWith('/contest') ||
+    pathname.startsWith('/round') ||
+    pathname.startsWith('/leaderboard')
+  );
+}
+
 export const ContestantSidebar: React.FC<{
   open?: boolean;
   onClose?: () => void;
 }> = ({ open = false, onClose }) => {
   const pathname = usePathname();
-  const { status, teamRevision } = useContestStatus();
+  const { status, rounds, teamRevision } = useContestStatus();
 
   // Re-read team session whenever the shared context reports a change.
   const team = React.useMemo(() => storage.getTeam(), [teamRevision]);
-
-  const contestStarted = status === 'ACTIVE' || status === 'COMPLETED';
-  const currentRound = team?.currentRound ?? 1;
 
   const isActive = (href: string) =>
     href === '/contest'
       ? pathname === '/contest' || pathname === '/'
       : pathname === href || pathname.startsWith(`${href}/`);
 
+  const roundStatus = (n: 1 | 2 | 3) => rounds[n]?.status ?? 'LOCKED';
+
+  const roundLockReason = (n: 1 | 2 | 3): string | null => {
+    if (!team) return 'Connect with your team number to unlock this round';
+    const st = roundStatus(n);
+    if (st === 'ACTIVE' || st === 'COMPLETED') return null;
+    if (st === 'READY') return 'Round is staged — waiting for the organizer to activate it';
+    return 'Locked until your team unlocks this round';
+  };
+
   const isLocked = (item: NavItem): boolean => {
     if (item.requiresNotStarted) return status !== 'NOT_STARTED';
-    if (item.round) {
-      if (!contestStarted) return true;
-      if (!team) return true;
-      return currentRound < item.round;
-    }
+    if (item.round) return roundLockReason(item.round) !== null;
     return false;
   };
 
@@ -127,16 +141,17 @@ export const ContestantSidebar: React.FC<{
             'relative flex items-center gap-3 rounded-md px-3 py-2 transition-colors duration-150';
 
           if (locked) {
+            const reason = item.requiresNotStarted
+              ? 'Available before the contest starts'
+              : item.round
+                ? roundLockReason(item.round) ?? 'Locked'
+                : 'Locked';
             return (
               <li key={item.href}>
                 <span
                   className={`${base} cursor-not-allowed bg-transparent opacity-60`}
                   aria-disabled="true"
-                  title={
-                    item.requiresNotStarted
-                      ? 'Available before the contest starts'
-                      : 'Locked until your team unlocks this round'
-                  }
+                  title={reason}
                 >
                   {content}
                 </span>
@@ -163,13 +178,24 @@ export const ContestantSidebar: React.FC<{
         })}
       </ul>
 
-      {!team && contestStarted && (
-        <p className="mt-4 rounded-md border border-border bg-surface-highlight px-3 py-2 text-[11px] leading-relaxed text-muted-text">
-          Connect with your team number to unlock the rounds.
-        </p>
+      {!team && (
+        <div className="mt-4 space-y-2">
+          <p className="rounded-md border border-border bg-surface-highlight px-3 py-2 text-[11px] leading-relaxed text-muted-text">
+            Connect with your team number to unlock the rounds.
+          </p>
+          <Link
+            href="/login"
+            className="block rounded-md bg-primary-accent px-3 py-2 text-center text-[11px] font-semibold uppercase tracking-[0.1em] text-primary-accent-contrast hover:opacity-90"
+          >
+            Team login
+          </Link>
+        </div>
       )}
     </nav>
   );
+
+  // Hide the contestant rail outside the contestant workspace.
+  if (!isWorkspaceRoute(pathname)) return null;
 
   return (
     <>

@@ -28,9 +28,10 @@ leaderboardRouter.get('/', async (req: Request, res: Response) => {
 // Admin Leaderboard & System Stats
 leaderboardRouter.get('/admin', requireAdmin, async (req: AuthRequest, res: Response) => {
   try {
-    const contest = await dataStore.getContest();
+    const contest = await dataStore.refreshRoundLifecycle();
     const leaderboard = await calculateLeaderboard();
     const teams = await dataStore.getAllTeams();
+    const rounds = await dataStore.getRoundStats();
     const now = Date.now();
     const startTimeMs = contest.contestStartTime ? new Date(contest.contestStartTime).getTime() : null;
 
@@ -52,6 +53,7 @@ leaderboardRouter.get('/admin', requireAdmin, async (req: AuthRequest, res: Resp
     return res.json({
       stats,
       contest,
+      rounds,
       leaderboard
     });
   } catch (err: any) {

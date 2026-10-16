@@ -4,6 +4,20 @@ import React, { createContext, useContext, useEffect, useRef, useState, useCallb
 import { getContestStatus, storage } from '@/lib/api';
 
 export type ContestStatus = 'NOT_STARTED' | 'ACTIVE' | 'COMPLETED' | string;
+export type RoundLifecycleStatus = 'LOCKED' | 'READY' | 'ACTIVE' | 'COMPLETED' | string;
+
+export interface RoundState {
+  status: RoundLifecycleStatus;
+  startedAt: number | null;
+}
+
+export type RoundMap = Record<1 | 2 | 3, RoundState>;
+
+const DEFAULT_ROUNDS: RoundMap = {
+  1: { status: 'LOCKED', startedAt: null },
+  2: { status: 'LOCKED', startedAt: null },
+  3: { status: 'LOCKED', startedAt: null },
+};
 
 interface ContestStatusContextType {
   status: ContestStatus;
@@ -12,6 +26,8 @@ interface ContestStatusContextType {
   elapsedMs: number;
   /** HH:MM:SS derived from elapsedMs, or placeholder before start. */
   elapsedLabel: string;
+  /** Independent lifecycle state for each round. */
+  rounds: RoundMap;
   /** Bumped whenever the team session in localStorage may have changed. */
   teamRevision: number;
   refreshTeam: () => void;
@@ -24,6 +40,7 @@ const ContestStatusContext = createContext<ContestStatusContextType>({
   contestStartTime: null,
   elapsedMs: 0,
   elapsedLabel: '--:--:--',
+  rounds: DEFAULT_ROUNDS,
   teamRevision: 0,
   refreshTeam: () => {},
   loading: true,
@@ -43,6 +60,7 @@ function formatHms(ms: number): string {
 export const ContestStatusProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [status, setStatus] = useState<ContestStatus>('NOT_STARTED');
   const [contestStartTime, setContestStartTime] = useState<number | null>(null);
+  const [rounds, setRounds] = useState<RoundMap>(DEFAULT_ROUNDS);
   const [now, setNow] = useState<number>(Date.now());
   const [loading, setLoading] = useState<boolean>(true);
   const [teamRevision, setTeamRevision] = useState<number>(0);
@@ -56,6 +74,11 @@ export const ContestStatusProvider: React.FC<{ children: React.ReactNode }> = ({
         startRef.current = res.contestStartTime;
         setContestStartTime(res.contestStartTime);
       }
+      setRounds({
+        1: { status: res.round1Status || 'LOCKED', startedAt: res.round1StartedAt ?? null },
+        2: { status: res.round2Status || 'LOCKED', startedAt: res.round2StartedAt ?? null },
+        3: { status: res.round3Status || 'LOCKED', startedAt: res.round3StartedAt ?? null },
+      });
     } catch {
       // Keep last known status on transient failure.
     } finally {
@@ -97,6 +120,7 @@ export const ContestStatusProvider: React.FC<{ children: React.ReactNode }> = ({
         contestStartTime: start,
         elapsedMs,
         elapsedLabel,
+        rounds,
         teamRevision,
         refreshTeam,
         loading,

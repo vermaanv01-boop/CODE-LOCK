@@ -36,18 +36,22 @@ export async function calculateLeaderboard(): Promise<LeaderboardEntry[]> {
     const r2TimeMs = comp.r2 ? comp.r2.elapsedTimeMs : null;
     const r3TimeMs = comp.r3 ? comp.r3.elapsedTimeMs : null;
 
+    // Aggregate active-round duration: sum of the completed per-round
+    // durations. Inter-round waiting time (the gap while the organizer
+    // activates the next round) is deliberately excluded.
     let totalTimeMs: number | null = null;
     let lastSolvedAt: number | null = null;
 
     if (comp.r3) {
-      totalTimeMs = comp.r3.elapsedTimeMs;
       lastSolvedAt = new Date(comp.r3.completedAt).getTime();
     } else if (comp.r2) {
-      totalTimeMs = comp.r2.elapsedTimeMs;
       lastSolvedAt = new Date(comp.r2.completedAt).getTime();
     } else if (comp.r1) {
-      totalTimeMs = comp.r1.elapsedTimeMs;
       lastSolvedAt = new Date(comp.r1.completedAt).getTime();
+    }
+
+    if (r1TimeMs !== null || r2TimeMs !== null || r3TimeMs !== null) {
+      totalTimeMs = (r1TimeMs || 0) + (r2TimeMs || 0) + (r3TimeMs || 0);
     }
 
     return {

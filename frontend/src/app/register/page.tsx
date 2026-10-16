@@ -101,6 +101,7 @@ export default function RegisterPage() {
         body: JSON.stringify(formData),
       });
       storage.setTeam(res.team);
+      if (res.token) storage.setTeamToken(res.token);
       setSuccessTeam(res.team);
     } catch (err: any) {
       if (err.data?.error === 'REGISTRATION_LOCKED') setIsLocked(true);
@@ -124,7 +125,7 @@ export default function RegisterPage() {
         </p>
         <div className="mt-6 flex justify-center gap-3">
           <Link
-            href="/contest"
+            href="/login"
             className="rounded bg-primary-accent px-5 py-2.5 text-xs font-semibold text-primary-accent-contrast"
           >
             Go to team login →

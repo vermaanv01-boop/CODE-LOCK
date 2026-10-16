@@ -2,7 +2,7 @@ export type ContestStatus = 'NOT_STARTED' | 'ACTIVE' | 'COMPLETED';
 
 export type RoundNumber = 1 | 2 | 3;
 
-export type RoundStatus = 'LOCKED' | 'ACTIVE' | 'COMPLETED';
+export type RoundStatus = 'LOCKED' | 'READY' | 'ACTIVE' | 'COMPLETED';
 
 export type TeamStatus = 'REGISTERED' | 'IN_ROUND_1' | 'ROUND_1_COMPLETE' | 'IN_ROUND_2' | 'ROUND_2_COMPLETE' | 'IN_ROUND_3' | 'FINISHED' | 'DISQUALIFIED';
 
@@ -34,6 +34,20 @@ export interface ContestState {
   round1Status: RoundStatus;
   round2Status: RoundStatus;
   round3Status: RoundStatus;
+  round1StartedAt: number | null;
+  round2StartedAt: number | null;
+  round3StartedAt: number | null;
+}
+
+export interface RoundLifecycleStats {
+  round: RoundNumber;
+  status: RoundStatus;
+  startedAt: number | null;
+  elapsedMs: number | null;
+  eligibleTeams: number;
+  completedTeams: number;
+  activeTeams: number;
+  durationStats: { minMs: number; maxMs: number; avgMs: number } | null;
 }
 
 export interface QuestionData {

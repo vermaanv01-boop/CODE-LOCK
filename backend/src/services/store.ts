@@ -103,13 +103,18 @@ export class DataStore {
     }
 
     // 2. Seed Contest State
+    // Round 1 has no prerequisite, so it begins READY (awaiting administrator
+    // activation). Rounds 2 and 3 remain LOCKED until their prerequisites are met.
     const initialContest = {
       status: 'NOT_STARTED' as ContestStatus,
       contestStartTime: null,
       contestEndTime: null,
-      round1Status: 'LOCKED' as RoundStatus,
+      round1Status: 'READY' as RoundStatus,
       round2Status: 'LOCKED' as RoundStatus,
       round3Status: 'LOCKED' as RoundStatus,
+      round1StartedAt: null,
+      round2StartedAt: null,
+      round3StartedAt: null,
       createdAt: new Date(),
       updatedAt: new Date()
     };
@@ -404,6 +409,41 @@ Solve the four role challenges on your team sheet and combine them to generate t
   }
 
   // --- CONTEST METHODS ---
+  private roundStatusField(round: RoundNumber): 'round1Status' | 'round2Status' | 'round3Status' {
+    return (`round${round}Status`) as 'round1Status' | 'round2Status' | 'round3Status';
+  }
+
+  private roundStartField(
+    round: RoundNumber
+  ): 'round1StartedAt' | 'round2StartedAt' | 'round3StartedAt' {
+    return (`round${round}StartedAt`) as
+      | 'round1StartedAt'
+      | 'round2StartedAt'
+      | 'round3StartedAt';
+  }
+
+  /**
+   * Idempotent preservation upgrade for documents created before the
+   * independent round lifecycle existed. Legacy contests kept Round 1 at
+   * LOCKED while NOT_STARTED and lacked per-round start timestamps. Returns
+   * true when the in-memory object was changed and needs persisting.
+   */
+  private normalizeContestShape(contest: any): boolean {
+    let changed = false;
+    for (const n of [1, 2, 3] as RoundNumber[]) {
+      const sf = this.roundStartField(n);
+      if (contest[sf] === undefined) {
+        contest[sf] = null;
+        changed = true;
+      }
+    }
+    if (contest.status === 'NOT_STARTED' && contest.round1Status === 'LOCKED') {
+      contest.round1Status = 'READY';
+      changed = true;
+    }
+    return changed;
+  }
+
   public async getContest(): Promise<any> {
     if (this.isMongoConnected) {
       let contest = await Contest.findOne();
@@ -412,10 +452,17 @@ Solve the four role challenges on your team sheet and combine them to generate t
           status: 'NOT_STARTED',
           contestStartTime: null,
           contestEndTime: null,
-          round1Status: 'LOCKED',
+          round1Status: 'READY',
           round2Status: 'LOCKED',
-          round3Status: 'LOCKED'
+          round3Status: 'LOCKED',
+          round1StartedAt: null,
+          round2StartedAt: null,
+          round3StartedAt: null
         });
+        return contest;
+      }
+      if (this.normalizeContestShape(contest)) {
+        await contest.save();
       }
       return contest;
     }
@@ -425,36 +472,203 @@ Solve the four role challenges on your team sheet and combine them to generate t
         status: 'NOT_STARTED',
         contestStartTime: null,
         contestEndTime: null,
-        round1Status: 'LOCKED',
+        round1Status: 'READY',
         round2Status: 'LOCKED',
-        round3Status: 'LOCKED'
+        round3Status: 'LOCKED',
+        round1StartedAt: null,
+        round2StartedAt: null,
+        round3StartedAt: null
       };
+      this.saveLocalData();
+    } else if (this.normalizeContestShape(this.localData.contest)) {
       this.saveLocalData();
     }
     return this.localData.contest;
   }
 
-  public async startContest(): Promise<any> {
-    const startTime = new Date();
+  /**
+   * Administrator-controlled activation of a single round.
+   * Enforces the LOCKED -> READY -> ACTIVE transition atomically: the status
+   * field is part of the update filter so concurrent activation requests can
+   * never create a second official start timestamp.
+   */
+  public async startRound(
+    round: RoundNumber
+  ): Promise<{ ok: boolean; alreadyActive?: boolean; reason?: string; contest?: any }> {
+    const statusField = this.roundStatusField(round);
+    const startField = this.roundStartField(round);
+
     if (this.isMongoConnected) {
-      let contest = await Contest.findOne();
-      if (!contest) {
-        contest = new Contest();
+      const current = await this.getContest();
+      if (current[statusField] === 'ACTIVE') {
+        return { ok: true, alreadyActive: true, contest: current };
       }
-      contest.status = 'ACTIVE';
-      contest.contestStartTime = startTime;
-      contest.round1Status = 'ACTIVE';
-      await contest.save();
-      return contest;
+      if (current[statusField] === 'COMPLETED') {
+        return { ok: false, reason: 'ROUND_COMPLETED', contest: current };
+      }
+      if (current[statusField] !== 'READY') {
+        return { ok: false, reason: 'ROUND_LOCKED', contest: current };
+      }
+
+      const startTime = new Date();
+      const set: Record<string, any> = { [statusField]: 'ACTIVE', [startField]: startTime };
+      if (round === 1) {
+        // Round 1 start opens the contest and freezes registration.
+        if (!current.contestStartTime) set.contestStartTime = startTime;
+        set.status = 'ACTIVE';
+      }
+
+      const updated = await Contest.findOneAndUpdate(
+        { _id: current._id, [statusField]: 'READY' },
+        { $set: set },
+        { new: true }
+      );
+
+      if (!updated) {
+        // A concurrent request won the race. Re-read authoritative state.
+        const fresh = await Contest.findOne();
+        if (fresh && fresh[statusField] === 'ACTIVE') {
+          return { ok: true, alreadyActive: true, contest: fresh };
+        }
+        return { ok: false, reason: 'CONFLICT', contest: fresh };
+      }
+      return { ok: true, contest: updated };
     }
-    this.localData.contest = {
-      ...this.localData.contest,
-      status: 'ACTIVE',
-      contestStartTime: startTime.toISOString(),
-      round1Status: 'ACTIVE'
-    };
+
+    // Offline embedded store — single-threaded, so the check-and-set below is
+    // atomic with respect to other requests.
+    const contest = this.localData.contest;
+    if (!contest) {
+      return { ok: false, reason: 'ROUND_LOCKED' };
+    }
+    if (contest[statusField] === 'ACTIVE') {
+      return { ok: true, alreadyActive: true, contest };
+    }
+    if (contest[statusField] === 'COMPLETED') {
+      return { ok: false, reason: 'ROUND_COMPLETED', contest };
+    }
+    if (contest[statusField] !== 'READY') {
+      return { ok: false, reason: 'ROUND_LOCKED', contest };
+    }
+
+    const startTime = new Date();
+    contest[statusField] = 'ACTIVE';
+    contest[startField] = startTime.toISOString();
+    if (round === 1) {
+      if (!contest.contestStartTime) contest.contestStartTime = startTime.toISOString();
+      contest.status = 'ACTIVE';
+    }
     this.saveLocalData();
-    return this.localData.contest;
+    return { ok: true, contest };
+  }
+
+  /** Backwards-compatible alias: starting the contest is starting Round 1. */
+  public async startContest(): Promise<any> {
+    const result = await this.startRound(1);
+    return result.contest;
+  }
+
+  /**
+   * Promotes the round AFTER a completed round from LOCKED to READY once its
+   * prerequisite is satisfied. Never promotes directly to ACTIVE.
+   */
+  public async promoteNextRound(completedRound: RoundNumber): Promise<void> {
+    if (completedRound >= 3) return;
+    const nextRound = (completedRound + 1) as RoundNumber;
+    const field = this.roundStatusField(nextRound);
+
+    if (this.isMongoConnected) {
+      await Contest.findOneAndUpdate(
+        { [field]: 'LOCKED' },
+        { $set: { [field]: 'READY' } }
+      );
+      return;
+    }
+    const contest = this.localData.contest;
+    if (contest && contest[field] === 'LOCKED') {
+      contest[field] = 'READY';
+      this.saveLocalData();
+    }
+  }
+
+  /**
+   * Derives contest-level round COMPLETED state: a round becomes COMPLETED
+   * once every eligible (non-disqualified) team has a completion record for
+   * it. When Round 3 completes, the contest itself is marked COMPLETED.
+   * Idempotent; safe to call on read.
+   */
+  public async refreshRoundLifecycle(): Promise<any> {
+    const contest = await this.getContest();
+    const teams = await this.getAllTeams();
+    const eligibleCount = teams.filter(t => t.status !== 'DISQUALIFIED').length;
+    if (eligibleCount === 0) return contest;
+
+    const completions = await this.getAllRoundCompletions();
+    let changed = false;
+
+    for (const n of [1, 2, 3] as RoundNumber[]) {
+      const field = this.roundStatusField(n);
+      if (contest[field] !== 'ACTIVE') continue;
+      const completedCount = completions.filter(c => c.round === n).length;
+      if (completedCount >= eligibleCount) {
+        contest[field] = 'COMPLETED';
+        changed = true;
+        if (n === 3 && contest.status !== 'COMPLETED') {
+          contest.status = 'COMPLETED';
+          if (!contest.contestEndTime) contest.contestEndTime = new Date();
+        }
+      }
+    }
+
+    if (changed) {
+      if (this.isMongoConnected) {
+        await contest.save();
+      } else {
+        this.saveLocalData();
+      }
+    }
+    return contest;
+  }
+
+  /** Per-round administrative statistics for the round-management console. */
+  public async getRoundStats(): Promise<Record<string, any>> {
+    const contest = await this.getContest();
+    const teams = await this.getAllTeams();
+    const completions = await this.getAllRoundCompletions();
+    const eligibleTeams = teams.filter(t => t.status !== 'DISQUALIFIED');
+    const now = Date.now();
+
+    const stats: Record<string, any> = {};
+    for (const n of [1, 2, 3] as RoundNumber[]) {
+      const roundCompletions = completions.filter(c => c.round === n);
+      const durations = roundCompletions
+        .map(c => c.elapsedTimeMs)
+        .filter((v: any) => typeof v === 'number' && isFinite(v));
+      const startRaw = contest[this.roundStartField(n)];
+      const startedAt = startRaw ? new Date(startRaw).getTime() : null;
+      const status = contest[this.roundStatusField(n)];
+
+      stats[String(n)] = {
+        round: n,
+        status,
+        startedAt,
+        elapsedMs:
+          status === 'ACTIVE' && startedAt ? Math.max(0, now - startedAt) : null,
+        eligibleTeams: eligibleTeams.length,
+        completedTeams: roundCompletions.length,
+        activeTeams: eligibleTeams.filter(
+          t => t.currentRound === n && t.status === (`IN_ROUND_${n}` as TeamStatus)
+        ).length,
+        durationStats: durations.length
+          ? {
+              minMs: Math.min(...durations),
+              maxMs: Math.max(...durations),
+              avgMs: Math.round(durations.reduce((a: number, b: number) => a + b, 0) / durations.length)
+            }
+          : null
+      };
+    }
+    return stats;
   }
 
   public async resetContest(): Promise<any> {
@@ -470,9 +684,12 @@ Solve the four role challenges on your team sheet and combine them to generate t
         status: 'NOT_STARTED',
         contestStartTime: null,
         contestEndTime: null,
-        round1Status: 'LOCKED',
+        round1Status: 'READY',
         round2Status: 'LOCKED',
-        round3Status: 'LOCKED'
+        round3Status: 'LOCKED',
+        round1StartedAt: null,
+        round2StartedAt: null,
+        round3StartedAt: null
       });
       return contest;
     }
@@ -481,9 +698,12 @@ Solve the four role challenges on your team sheet and combine them to generate t
       status: 'NOT_STARTED',
       contestStartTime: null,
       contestEndTime: null,
-      round1Status: 'LOCKED',
+      round1Status: 'READY',
       round2Status: 'LOCKED',
-      round3Status: 'LOCKED'
+      round3Status: 'LOCKED',
+      round1StartedAt: null,
+      round2StartedAt: null,
+      round3StartedAt: null
     };
     this.localData.submissions = [];
     this.localData.roundCompletions = [];
@@ -646,26 +866,27 @@ Solve the four role challenges on your team sheet and combine them to generate t
     completedAt: Date;
     elapsedTimeMs: number;
   }) {
+    // Insert-only: an existing completion is authoritative and must never be
+    // overwritten (frozen duration record).
     if (this.isMongoConnected) {
       return await RoundCompletion.findOneAndUpdate(
         { teamId: data.teamId, round: data.round },
-        data,
-        { upsert: true, new: true }
+        { $setOnInsert: data },
+        { upsert: true, new: true, setDefaultsOnInsert: true }
       );
     }
     const existingIdx = this.localData.roundCompletions.findIndex(
       rc => (rc.teamId === data.teamId || rc.teamId?.toString() === data.teamId) && rc.round === data.round
     );
+    if (existingIdx >= 0) {
+      return this.localData.roundCompletions[existingIdx];
+    }
     const item = {
       id: 'rc_' + Date.now(),
       ...data,
       completedAt: data.completedAt.toISOString()
     };
-    if (existingIdx >= 0) {
-      this.localData.roundCompletions[existingIdx] = item;
-    } else {
-      this.localData.roundCompletions.push(item);
-    }
+    this.localData.roundCompletions.push(item);
     this.saveLocalData();
     return item;
   }

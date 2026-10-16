@@ -8,6 +8,9 @@ export interface IContest extends Document {
   round1Status: RoundStatus;
   round2Status: RoundStatus;
   round3Status: RoundStatus;
+  round1StartedAt: Date | null;
+  round2StartedAt: Date | null;
+  round3StartedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -20,9 +23,12 @@ const ContestSchema = new Schema<IContest>({
   },
   contestStartTime: { type: Date, default: null },
   contestEndTime: { type: Date, default: null },
-  round1Status: { type: String, enum: ['LOCKED', 'ACTIVE', 'COMPLETED'], default: 'LOCKED' },
-  round2Status: { type: String, enum: ['LOCKED', 'ACTIVE', 'COMPLETED'], default: 'LOCKED' },
-  round3Status: { type: String, enum: ['LOCKED', 'ACTIVE', 'COMPLETED'], default: 'LOCKED' }
+  round1Status: { type: String, enum: ['LOCKED', 'READY', 'ACTIVE', 'COMPLETED'], default: 'READY' },
+  round2Status: { type: String, enum: ['LOCKED', 'READY', 'ACTIVE', 'COMPLETED'], default: 'LOCKED' },
+  round3Status: { type: String, enum: ['LOCKED', 'READY', 'ACTIVE', 'COMPLETED'], default: 'LOCKED' },
+  round1StartedAt: { type: Date, default: null },
+  round2StartedAt: { type: Date, default: null },
+  round3StartedAt: { type: Date, default: null }
 }, {
   timestamps: true
 });

@@ -2,314 +2,287 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { getContestStatus, apiRequest, storage } from '@/lib/api';
+import { getContestStatus, storage } from '@/lib/api';
+import { StatusBadge, SectionLabel, Stat } from '@/components/ui';
 import { VerifiedStamp } from '@/components/VerifiedStamp';
-import { StatusBadge } from '@/components/ui';
-import { ArrowRight, Radio, AlertTriangle, Users, Clock, Wifi } from 'lucide-react';
+import {
+  ArrowRight,
+  Code2,
+  Bug,
+  KeyRound,
+  Users,
+  Clock,
+  ShieldCheck,
+  WifiOff,
+  Trophy,
+  Lightbulb,
+  PenTool,
+  Search,
+  Headphones,
+  LogIn,
+  Settings,
+} from 'lucide-react';
 
-const GATES = [
+const ROUNDS = [
   {
-    round: 'Round 01',
+    n: '01',
     name: 'Coding Lock',
-    detail: '6 problems · 2 digits each',
-    body: 'Six algorithmic problems. Each yields a 2-digit numeric answer. Combine Q1 through Q6 in order to forge the 12-digit unlock key.',
-    format: 'XX-XX-XX-XX-XX-XX',
-    digits: '12 digits',
+    icon: Code2,
     tint: 'bg-accent-yellow',
+    desc: 'Receive the problem sheets and compose a working solution as a squad. Correct logic yields the round pass code.',
   },
   {
-    round: 'Round 02',
+    n: '02',
     name: 'Debugging Lock',
-    detail: '2 broken programs · 3 digits each',
-    body: 'Two intentionally broken programs with boundary and logic bugs. Repair them, run the payload, and concatenate the two 3-digit outputs into a 6-digit key.',
-    format: 'XXX-XXX',
-    digits: '6 digits',
+    icon: Bug,
     tint: 'bg-accent-pink',
+    desc: 'A broken program is placed in front of you. Find the faults, repair the logic, and unlock the next stage.',
   },
   {
-    round: 'Round 03',
-    name: 'The Final Lock',
-    detail: 'Squad reconstruction',
-    body: 'A multi-role extraction challenge. The Thinker, Coder, Debugger, and Supporter each contribute a fragment to synthesize the master completion sequence.',
-    format: 'Master cipher',
-    digits: 'Final verified',
+    n: '03',
+    name: 'Final Lock',
+    icon: KeyRound,
     tint: 'bg-accent-blue',
+    desc: 'Role fragments must be combined in the correct order to assemble the master code and seal the competition.',
   },
 ];
 
-export default function HomePage() {
-  const router = useRouter();
+const ROLES = [
+  { name: 'Thinker', icon: Lightbulb, desc: 'Deciphers the puzzle and plans the approach.' },
+  { name: 'Coder', icon: PenTool, desc: 'Writes the solution under the squad\u2019s direction.' },
+  { name: 'Debugger', icon: Search, desc: 'Traces and repairs faults in the program.' },
+  { name: 'Supporter', icon: Headphones, desc: 'Manages timing, codes and communication.' },
+];
+
+export default function LandingPage() {
   const [contest, setContest] = useState<any>(null);
-  const [teamNumberInput, setTeamNumberInput] = useState('');
-  const [loginError, setLoginError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [activeTeam, setActiveTeam] = useState<any>(null);
+  const [team, setTeam] = useState<any>(null);
 
   useEffect(() => {
-    setActiveTeam(storage.getTeam());
-    getContestStatus().then(setContest).catch(() => {});
+    setTeam(storage.getTeam());
+    getContestStatus()
+      .then(setContest)
+      .catch(() => {});
   }, []);
 
-  const handleTeamLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoginError('');
-    if (!teamNumberInput.trim()) return;
-
-    setIsLoading(true);
-    try {
-      const res = await apiRequest('/auth/team/login', {
-        method: 'POST',
-        body: JSON.stringify({ teamNumber: teamNumberInput.trim().toUpperCase() }),
-      });
-      storage.setTeam(res.team);
-      setActiveTeam(res.team);
-      router.push('/contest');
-    } catch (err: any) {
-      setLoginError(err.message || 'Team number not found.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const registrationOpen = contest?.status === 'NOT_STARTED';
 
   return (
-    <div className="space-y-8">
-      {/* Editorial hero */}
-      <section className="rounded-md border border-border bg-surface p-6 sm:p-10">
-        <div className="flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
-          <div className="max-w-2xl space-y-4">
-            <div className="flex flex-wrap items-center gap-3">
-              <span className="rounded-sm bg-primary-accent px-2 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-primary-accent-contrast">
-                Event specification
-              </span>
-              <span className="font-mono text-xs text-muted-text">Host revision 2026.04</span>
+    <div className="space-y-16 py-2">
+      {/* Hero */}
+      <section className="animate-rise-in">
+        <div className="grid gap-8 lg:grid-cols-12 lg:items-center">
+          <div className="lg:col-span-7">
+            <div className="flex flex-wrap items-center gap-2">
+              <SectionLabel>Team logic &amp; debugging competition</SectionLabel>
+              {contest && <StatusBadge status={contest.status} />}
             </div>
-
-            <h1 className="font-serif text-4xl font-semibold leading-none tracking-tight text-primary-text sm:text-6xl">
+            <h1 className="mt-3 font-serif text-4xl font-semibold leading-[1.05] tracking-tight text-primary-text sm:text-6xl">
               CODE<span className="text-muted-text">//</span>LOCK
             </h1>
-
-            <p className="font-mono text-sm font-semibold uppercase tracking-[0.2em] text-warning">
+            <p className="mt-4 font-mono text-xs uppercase tracking-[0.28em] text-primary-accent sm:text-sm">
               Think. Code. Unlock. Debug.
             </p>
-
-            <p className="text-sm leading-relaxed text-muted-text">
-              An offline-first team coding, debugging, and logic contest built for closed LAN
-              environments — no cloud or internet connectivity required.
+            <p className="mt-5 max-w-xl text-sm leading-relaxed text-muted-text">
+              A three-round contest for four-person squads. Each round hides the way forward behind a
+              locked code — solve the challenge, earn the unlock, and advance. Everything runs on the
+              local network against a single organizer server, so timings and standings stay fair.
             </p>
 
-            <div className="flex flex-wrap gap-x-5 gap-y-2 pt-1 text-xs text-muted-text">
-              <span className="flex items-center gap-2">
-                <span className="inline-block h-1.5 w-1.5 rounded-full bg-accent-yellow" aria-hidden="true" />
-                4-member specialized squad
-              </span>
-              <span className="flex items-center gap-2">
-                <span className="inline-block h-1.5 w-1.5 rounded-full bg-accent-green" aria-hidden="true" />
-                Official server timestamps
-              </span>
-              <span className="flex items-center gap-2">
-                <span className="inline-block h-1.5 w-1.5 rounded-full bg-accent-blue" aria-hidden="true" />
-                No cloud runtime dependency
-              </span>
+            <div className="mt-7 flex flex-wrap items-center gap-3">
+              {team ? (
+                <Link
+                  href="/contest"
+                  className="inline-flex items-center gap-2 rounded bg-primary-accent px-5 py-3 text-xs font-semibold uppercase tracking-[0.1em] text-primary-accent-contrast hover:opacity-90"
+                >
+                  Resume as {team.teamNumber}
+                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                </Link>
+              ) : (
+                <Link
+                  href="/login"
+                  className="inline-flex items-center gap-2 rounded bg-primary-accent px-5 py-3 text-xs font-semibold uppercase tracking-[0.1em] text-primary-accent-contrast hover:opacity-90"
+                >
+                  <LogIn className="h-4 w-4" aria-hidden="true" />
+                  Contestant login
+                </Link>
+              )}
+
+              {registrationOpen && (
+                <Link
+                  href="/register"
+                  className="inline-flex items-center gap-2 rounded border border-border-strong bg-surface px-5 py-3 text-xs font-semibold uppercase tracking-[0.1em] text-primary-text hover:border-primary-accent"
+                >
+                  Register your team
+                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                </Link>
+              )}
+
+              <Link
+                href="/admin/login"
+                className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.1em] text-muted-text hover:text-primary-text"
+              >
+                <Settings className="h-3.5 w-3.5" aria-hidden="true" />
+                Administrator login
+              </Link>
             </div>
           </div>
 
-          <div className="flex flex-col items-start gap-4 md:items-end">
-            <VerifiedStamp label="Official event" size="lg" />
-            <div className="w-full rounded-md border border-border bg-surface-highlight px-4 py-3 text-left md:text-right">
-              <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-text">
-                Organizer status
-              </div>
-              <div className="mt-1 flex items-center gap-2 md:justify-end">
-                <span className="font-mono text-sm font-semibold text-primary-accent">
-                  {contest?.status || 'Connecting…'}
+          {/* Status panel */}
+          <div className="lg:col-span-5">
+            <div className="rounded-md border border-border bg-surface p-5">
+              <div className="mb-4 flex items-center justify-between border-b border-border pb-3">
+                <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-text">
+                  Contest telemetry
                 </span>
-                <StatusBadge status={contest?.status} />
+                <VerifiedStamp label="Server synchronized" size="sm" />
               </div>
-              <div className="mt-1 font-mono text-[10px] text-muted-text">Port 5000 · REST engine</div>
+              <div className="grid grid-cols-2 gap-3">
+                <Stat label="Contest" value={(contest?.status || '—').replace(/_/g, ' ')} accent="blue" />
+                <Stat
+                  label="Round 01"
+                  value={(contest?.round1Status || 'LOCKED')}
+                  accent="yellow"
+                />
+                <Stat label="Round 02" value={(contest?.round2Status || 'LOCKED')} />
+                <Stat label="Round 03" value={(contest?.round3Status || 'LOCKED')} />
+              </div>
+              <p className="mt-4 text-[11px] leading-relaxed text-muted-text">
+                Rounds activate on the organizer&apos;s signal. Your squad&apos;s timer starts the moment
+                a round goes live and is measured by the server clock.
+              </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Access console + round architecture */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-        {/* Left: team access */}
-        <div className="space-y-6 lg:col-span-5">
-          <div className="rounded-md border border-border bg-surface p-6">
-            <div className="mb-4 flex items-center justify-between border-b border-border pb-3">
-              <h2 className="text-xs font-semibold uppercase tracking-[0.14em] text-primary-text">
-                Team access
-              </h2>
-              <span className="font-mono text-[10px] text-muted-text">Portal 01</span>
-            </div>
-
-            {activeTeam ? (
-              <div className="space-y-4">
-                <div className="rounded-md border border-border bg-surface-highlight p-4">
-                  <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-text">
-                    Connected squad
-                  </div>
-                  <div className="mt-1 font-mono text-xl font-semibold text-primary-accent">
-                    {activeTeam.teamNumber}
-                  </div>
-                  <div className="text-sm font-medium text-primary-text">{activeTeam.teamName}</div>
-                  <div className="mt-3 flex items-center justify-between border-t border-border pt-2 text-[11px] text-muted-text">
-                    <span>Stage · Round 0{activeTeam.currentRound}</span>
-                    <StatusBadge status={activeTeam.status} />
-                  </div>
-                </div>
-
-                <div className="flex gap-2">
-                  <Link
-                    href="/contest"
-                    className="flex flex-1 items-center justify-center gap-2 rounded bg-primary-accent px-4 py-2.5 text-xs font-semibold text-primary-accent-contrast hover:opacity-90"
-                  >
-                    Enter contest
-                    <ArrowRight className="h-4 w-4" aria-hidden="true" />
-                  </Link>
-                  <button
-                    onClick={() => {
-                      storage.clearTeam();
-                      setActiveTeam(null);
-                    }}
-                    className="rounded border border-border px-3 py-2.5 text-xs text-muted-text hover:border-error hover:text-error"
-                  >
-                    Disconnect
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <form onSubmit={handleTeamLogin} className="space-y-4">
-                <p className="text-xs leading-relaxed text-muted-text">
-                  Enter your organizer-assigned team number (for example{' '}
-                  <span className="font-mono font-semibold text-primary-text">T-001</span>) to access
-                  your squad console.
-                </p>
-
-                <div>
-                  <label
-                    htmlFor="team-number"
-                    className="mb-1 block text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-text"
-                  >
-                    Team identifier
-                  </label>
-                  <input
-                    id="team-number"
-                    type="text"
-                    value={teamNumberInput}
-                    onChange={(e) => setTeamNumberInput(e.target.value.toUpperCase())}
-                    placeholder="e.g. T-027"
-                    className="w-full rounded border border-border bg-background p-2.5 font-mono text-sm uppercase text-primary-text placeholder:text-muted-text/50 focus:border-primary-accent focus:outline-none"
-                  />
-                </div>
-
-                {loginError && (
-                  <div
-                    role="alert"
-                    className="flex items-center gap-2 rounded border border-error/40 bg-error/10 p-2.5 text-xs text-error"
-                  >
-                    <AlertTriangle className="h-4 w-4 shrink-0" aria-hidden="true" />
-                    <span>{loginError}</span>
-                  </div>
-                )}
-
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="flex w-full items-center justify-center gap-2 rounded bg-primary-accent px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.1em] text-primary-accent-contrast hover:opacity-90 disabled:opacity-50"
-                >
-                  {isLoading ? 'Authenticating…' : 'Authenticate team'}
-                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
-                </button>
-
-                <div className="flex items-center justify-between border-t border-border pt-3 text-xs text-muted-text">
-                  <span>New squad?</span>
-                  {contest?.status === 'NOT_STARTED' ? (
-                    <Link href="/register" className="font-semibold text-primary-accent hover:underline">
-                      Register team sheet →
-                    </Link>
-                  ) : (
-                    <span className="text-[10px] font-semibold uppercase tracking-[0.1em] text-warning">
-                      Registration locked
-                    </span>
-                  )}
-                </div>
-              </form>
-            )}
+      {/* Competition overview */}
+      <section>
+        <div className="flex items-end justify-between border-b border-border pb-3">
+          <div>
+            <SectionLabel>The format</SectionLabel>
+            <h2 className="mt-1 font-serif text-2xl font-semibold tracking-tight text-primary-text sm:text-3xl">
+              Three rounds, three locks
+            </h2>
           </div>
-
-          {/* LAN connectivity */}
-          <div className="rounded-md border border-border bg-surface-highlight p-5 text-xs">
-            <div className="mb-2 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-primary-text">
-              <Wifi className="h-3.5 w-3.5 text-primary-accent" aria-hidden="true" />
-              Private LAN connectivity
-            </div>
-            <p className="leading-relaxed text-muted-text">
-              Participants on the contest network should browse to the organizer machine&apos;s LAN
-              address:
-            </p>
-            <div className="mt-2 select-all rounded border border-border bg-background px-2 py-1.5 font-mono text-primary-accent">
-              http://[ORGANIZER-LAN-IP]:3000
-            </div>
-            <p className="mt-2 text-[10px] text-muted-text">
-              Clock synchronization runs over HTTP with zero external WAN dependency.
-            </p>
-          </div>
+          <Trophy className="hidden h-5 w-5 text-muted-text sm:block" aria-hidden="true" />
         </div>
 
-        {/* Right: round architecture */}
-        <div className="space-y-4 lg:col-span-7">
-          <div className="rounded-md border border-border bg-surface p-6">
-            <div className="mb-4 flex items-center justify-between border-b border-border pb-3">
-              <h2 className="text-xs font-semibold uppercase tracking-[0.14em] text-primary-text">
-                Contest sequence &amp; round locks
-              </h2>
-              <span className="font-mono text-[10px] text-muted-text">3 gates</span>
-            </div>
-
-            <div className="space-y-3">
-              {GATES.map((gate) => (
-                <div key={gate.round} className="overflow-hidden rounded-md border border-border">
-                  <div className={`h-1 w-full ${gate.tint}`} aria-hidden="true" />
-                  <div className="space-y-2 bg-surface-highlight p-4">
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <div className="flex items-center gap-2">
-                        <span className="rounded-sm bg-surface px-1.5 py-0.5 font-mono text-[10px] font-semibold text-muted-text">
-                          {gate.round}
-                        </span>
-                        <span className="text-sm font-semibold text-primary-text">{gate.name}</span>
-                      </div>
-                      <span className="text-[11px] text-muted-text">{gate.detail}</span>
-                    </div>
-                    <p className="text-xs leading-relaxed text-muted-text">{gate.body}</p>
-                    <div className="flex justify-between border-t border-border pt-2 text-[11px] text-muted-text">
-                      <span className="font-mono">{gate.format}</span>
-                      <span className="font-semibold text-primary-accent">{gate.digits}</span>
-                    </div>
+        <div className="mt-6 grid gap-4 sm:grid-cols-3">
+          {ROUNDS.map((r, i) => {
+            const Icon = r.icon;
+            return (
+              <article
+                key={r.n}
+                className="animate-rise-in overflow-hidden rounded-md border border-border bg-surface"
+                style={{ animationDelay: `${i * 60}ms` }}
+              >
+                <div className={`h-1 w-full ${r.tint}`} aria-hidden="true" />
+                <div className="p-5">
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono text-xs font-semibold text-muted-text">ROUND {r.n}</span>
+                    <Icon className="h-4 w-4 text-muted-text" aria-hidden="true" />
                   </div>
+                  <h3 className="mt-2 text-base font-semibold text-primary-text">{r.name}</h3>
+                  <p className="mt-2 text-xs leading-relaxed text-muted-text">{r.desc}</p>
                 </div>
-              ))}
-            </div>
-          </div>
+              </article>
+            );
+          })}
+        </div>
+      </section>
 
-          {/* Scoreboard link */}
-          <div className="flex items-center justify-between rounded-md border border-border bg-surface p-4">
-            <div>
-              <div className="text-sm font-semibold text-primary-text">Official live scoreboard</div>
-              <div className="text-[11px] text-muted-text">
-                Server-ordered rankings and official round split times.
-              </div>
-            </div>
+      {/* Roles & rules */}
+      <section className="grid gap-8 lg:grid-cols-12">
+        <div className="lg:col-span-6">
+          <div className="border-b border-border pb-3">
+            <SectionLabel>Each squad, four roles</SectionLabel>
+            <h2 className="mt-1 font-serif text-2xl font-semibold tracking-tight text-primary-text sm:text-3xl">
+              Everyone has a job
+            </h2>
+          </div>
+          <ul className="mt-5 grid gap-3 sm:grid-cols-2">
+            {ROLES.map((role) => {
+              const Icon = role.icon;
+              return (
+                <li
+                  key={role.name}
+                  className="flex items-start gap-3 rounded-md border border-border bg-surface p-4"
+                >
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded border border-border bg-surface-highlight text-primary-accent">
+                    <Icon className="h-4 w-4" aria-hidden="true" />
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block text-sm font-semibold text-primary-text">{role.name}</span>
+                    <span className="mt-0.5 block text-xs leading-relaxed text-muted-text">
+                      {role.desc}
+                    </span>
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+
+        <div className="lg:col-span-6">
+          <div className="border-b border-border pb-3">
+            <SectionLabel>Ground rules</SectionLabel>
+            <h2 className="mt-1 font-serif text-2xl font-semibold tracking-tight text-primary-text sm:text-3xl">
+              How it runs
+            </h2>
+          </div>
+          <ul className="mt-5 space-y-3 text-sm text-primary-text">
+            {[
+              { icon: Clock, text: 'Round timings are enforced by the organizer server — not your device.' },
+              { icon: KeyRound, text: 'Advancing requires the unlock code earned by completing the round.' },
+              { icon: ShieldCheck, text: 'Codes and submissions are validated on the server; duplicates are ignored.' },
+              { icon: WifiOff, text: 'No internet required — the whole contest runs on the local network.' },
+            ].map((rule, i) => {
+              const Icon = rule.icon;
+              return (
+                <li key={i} className="flex items-start gap-3 rounded-md border border-border bg-surface p-4">
+                  <Icon className="mt-0.5 h-4 w-4 shrink-0 text-primary-accent" aria-hidden="true" />
+                  <span className="leading-relaxed">{rule.text}</span>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      </section>
+
+      {/* Closing CTA */}
+      <section className="rounded-md border border-border bg-surface-highlight p-6 sm:p-8">
+        <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+          <div>
+            <h2 className="font-serif text-2xl font-semibold tracking-tight text-primary-text">
+              Ready to take the lock?
+            </h2>
+            <p className="mt-1 text-sm text-muted-text">
+              {registrationOpen
+                ? 'Registration is open. Assemble your squad of four and claim a station.'
+                : 'Registration has closed. Existing squads can sign in to continue.'}
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            {registrationOpen && (
+              <Link
+                href="/register"
+                className="inline-flex items-center gap-2 rounded bg-primary-accent px-5 py-3 text-xs font-semibold uppercase tracking-[0.1em] text-primary-accent-contrast hover:opacity-90"
+              >
+                Register your team
+                <ArrowRight className="h-4 w-4" aria-hidden="true" />
+              </Link>
+            )}
             <Link
-              href="/leaderboard"
-              className="rounded border border-border px-4 py-2 text-xs font-semibold text-primary-accent hover:border-primary-accent"
+              href="/login"
+              className="inline-flex items-center gap-2 rounded border border-border-strong bg-surface px-5 py-3 text-xs font-semibold uppercase tracking-[0.1em] text-primary-text hover:border-primary-accent"
             >
-              View scoreboard →
+              <Users className="h-4 w-4" aria-hidden="true" />
+              Contestant login
             </Link>
           </div>
         </div>
-      </div>
+      </section>
     </div>
   );
 }
