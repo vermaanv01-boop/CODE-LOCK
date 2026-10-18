@@ -661,10 +661,10 @@ Solve the four role challenges on your team sheet and combine them to generate t
         ).length,
         durationStats: durations.length
           ? {
-              minMs: Math.min(...durations),
-              maxMs: Math.max(...durations),
-              avgMs: Math.round(durations.reduce((a: number, b: number) => a + b, 0) / durations.length)
-            }
+            minMs: Math.min(...durations),
+            maxMs: Math.max(...durations),
+            avgMs: Math.round(durations.reduce((a: number, b: number) => a + b, 0) / durations.length)
+          }
           : null
       };
     }
