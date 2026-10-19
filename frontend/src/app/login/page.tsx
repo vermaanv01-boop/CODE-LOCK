@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { apiRequest, storage, getContestStatus } from '@/lib/api';
 import { StatusBadge, SectionLabel } from '@/components/ui';
+import { BackButton } from '@/components/BackButton';
 import { VerifiedStamp } from '@/components/VerifiedStamp';
 import { Users, ArrowRight, AlertTriangle, KeyRound } from 'lucide-react';
 

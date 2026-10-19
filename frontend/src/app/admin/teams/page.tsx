@@ -18,6 +18,7 @@ import {
   Activity
 } from 'lucide-react';
 import { apiRequest, adminRegisterTeam, adminRemoveTeam, storage } from '@/lib/api';
+import { BackButton } from '@/components/BackButton';
 
 interface TeamMemberForm {
   teamNumber: string;
@@ -200,6 +201,8 @@ function AdminTeamsContent() {
         </div>
 
         <div className="flex items-center gap-3 flex-wrap">
+          <BackButton href="/admin" label="CONTROL ROOM" />
+
           <div className="relative">
             <Search className="w-3.5 h-3.5 text-muted-text absolute left-3 top-3" />
             <input

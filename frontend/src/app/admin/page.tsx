@@ -269,8 +269,11 @@ export default function AdminControlRoomPage() {
         </div>
       )}
 
-      {/* Main Control Panel Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+      {/* SECTION 1: MAIN CONTROL ROOM OPERATIONS */}
+      {activeTab === 'control' && (
+        <div className="space-y-6">
+          {/* Main Control Panel Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
         {/* Telemetry Status Monitor (8 Cols) */}
         <div className="md:col-span-8 border border-border bg-surface p-5 sm:p-6 space-y-4 shadow-sm">
           <div className="flex items-center justify-between border-b border-border pb-3">
@@ -465,23 +468,59 @@ export default function AdminControlRoomPage() {
         </div>
       </div>
 
-      {/* SUPERVISORY LIVE SCOREBOARD */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Trophy className="w-4 h-4 text-primary-accent" />
-            <h2 className="text-sm font-bold text-primary-text uppercase tracking-wider">
-              OFFICIAL SUPERVISORY LEADERBOARD
-            </h2>
+          {/* Transition banner linking to Section 2 */}
+          <div className="border border-border bg-surface p-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs shadow-sm">
+            <div className="flex items-center gap-2 text-muted-text">
+              <Trophy className="w-4 h-4 text-primary-accent shrink-0" />
+              <span>Full contestant leaderboard and live time telemetry are located in Section 2.</span>
+            </div>
+            <button
+              onClick={() => setActiveTab('leaderboard')}
+              className="px-4 py-2 border border-primary-accent bg-primary-accent/10 hover:bg-primary-accent hover:text-primary-accent-contrast text-primary-accent text-xs font-bold transition-all flex items-center gap-2"
+            >
+              <span>VIEW SUPERVISORY SCOREBOARD ({leaderboard.length})</span>
+              <span>→</span>
+            </button>
           </div>
-          <span className="text-[10px] text-muted-text">AUTO-POLLING EVERY 4S</span>
         </div>
+      )}
 
-        <LeaderboardTable
-          entries={leaderboard}
-          showRoundBreakdown={true}
-        />
-      </div>
+      {/* SECTION 2: DEDICATED SUPERVISORY LIVE SCOREBOARD */}
+      {activeTab === 'leaderboard' && (
+        <div className="space-y-4 animate-in fade-in duration-150">
+          <div className="border border-border bg-surface p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
+            <div>
+              <div className="flex items-center gap-2 text-[10px] text-muted-text uppercase tracking-widest mb-1">
+                <Trophy className="w-3.5 h-3.5 text-primary-accent" />
+                <span>OFFICIAL STANDINGS</span>
+                <span className="text-border">|</span>
+                <span className="text-primary-accent font-bold">SECTION 2</span>
+              </div>
+              <h2 className="text-xl sm:text-2xl font-bold text-primary-text tracking-tight uppercase">
+                SUPERVISORY LEADERBOARD
+              </h2>
+              <div className="text-xs text-muted-text mt-0.5">
+                REAL-TIME TELEMETRY • AUTO-POLLING EVERY 4 SECONDS
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setActiveTab('control')}
+                className="px-3.5 py-2 border border-border hover:border-primary-accent text-xs font-mono text-muted-text hover:text-primary-accent bg-background transition-colors flex items-center gap-1.5"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span>BACK TO OPERATIONS</span>
+              </button>
+            </div>
+          </div>
+
+          <LeaderboardTable
+            entries={leaderboard}
+            showRoundBreakdown={true}
+          />
+        </div>
+      )}
     </div>
   );
 }

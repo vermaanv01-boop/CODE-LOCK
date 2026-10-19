@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { apiRequest, storage } from '@/lib/api';
+import { BackButton } from '@/components/BackButton';
 import { Shield, Key, AlertTriangle, ArrowRight } from 'lucide-react';
 
 export default function AdminLoginPage() {
@@ -47,7 +48,10 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="max-w-md mx-auto my-14 select-none font-mono">
+    <div className="max-w-md mx-auto my-10 select-none font-mono space-y-4">
+      <div>
+        <BackButton href="/" label="BACK TO PORTAL" />
+      </div>
       <div className="border border-border bg-surface p-6 sm:p-8 space-y-6 shadow-sm">
         <div className="border-b border-border pb-4 flex items-center justify-between">
           <div>

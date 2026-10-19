@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getAdminLeaderboard, storage } from '@/lib/api';
 import { LeaderboardTable } from '@/components/LeaderboardTable';
+import { BackButton } from '@/components/BackButton';
 import { ArrowLeft, Trophy, RefreshCw, Radio } from 'lucide-react';
 
 export default function AdminLeaderboardPage() {
@@ -57,13 +58,17 @@ export default function AdminLeaderboardPage() {
           </div>
         </div>
 
-        <button
-          onClick={fetchScoreboard}
-          className="p-2 border border-border hover:border-primary-accent text-primary-accent text-xs flex items-center gap-1.5 bg-background transition-colors"
-        >
-          <RefreshCw className="w-3.5 h-3.5" />
-          <span>POLL SCOREBOARD</span>
-        </button>
+        <div className="flex items-center gap-2.5">
+          <BackButton href="/admin" label="CONTROL ROOM" />
+
+          <button
+            onClick={fetchScoreboard}
+            className="p-2 border border-border hover:border-primary-accent text-primary-accent text-xs flex items-center gap-1.5 bg-background transition-colors"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+            <span>POLL SCOREBOARD</span>
+          </button>
+        </div>
       </div>
 
       <LeaderboardTable
