@@ -749,13 +749,17 @@ Solve the four role challenges on your team sheet and combine them to generate t
     debugger: string;
     supporter: string;
     accessPin?: string;
+    currentRound?: RoundNumber;
+    status?: TeamStatus;
   }): Promise<any> {
+    const currentRound = teamData.currentRound || 1;
+    const status = teamData.status || 'REGISTERED';
     if (this.isMongoConnected) {
       return await Team.create({
         ...teamData,
         teamNumber: teamData.teamNumber.trim().toUpperCase(),
-        currentRound: 1,
-        status: 'REGISTERED',
+        currentRound,
+        status,
         registeredAt: new Date()
       });
     }
@@ -764,13 +768,49 @@ Solve the four role challenges on your team sheet and combine them to generate t
       _id: 'team_' + Date.now(),
       ...teamData,
       teamNumber: teamData.teamNumber.trim().toUpperCase(),
-      currentRound: 1,
-      status: 'REGISTERED' as TeamStatus,
+      currentRound,
+      status: status as TeamStatus,
       registeredAt: new Date().toISOString()
     };
     this.localData.teams.push(newTeam);
     this.saveLocalData();
     return newTeam;
+  }
+
+  public async deleteTeam(idOrNumber: string): Promise<any | null> {
+    const param = (idOrNumber || '').trim();
+    const team = (await this.getTeamById(param)) || (await this.getTeamByNumber(param));
+    if (!team) {
+      return null;
+    }
+
+    const teamId = (team._id || team.id).toString();
+    const teamNumber = team.teamNumber;
+
+    if (this.isMongoConnected) {
+      if (mongoose.Types.ObjectId.isValid(teamId)) {
+        await Team.findByIdAndDelete(teamId);
+        await Submission.deleteMany({ teamId: new mongoose.Types.ObjectId(teamId) });
+        await RoundCompletion.deleteMany({ teamId: new mongoose.Types.ObjectId(teamId) });
+      } else {
+        await Team.deleteOne({ teamNumber });
+        await Submission.deleteMany({ teamId });
+        await RoundCompletion.deleteMany({ teamId });
+      }
+      return team;
+    }
+
+    this.localData.teams = this.localData.teams.filter(
+      t => (t.id || t._id)?.toString() !== teamId && t.teamNumber?.toUpperCase() !== teamNumber.toUpperCase()
+    );
+    this.localData.submissions = this.localData.submissions.filter(
+      s => s.teamId?.toString() !== teamId && s.teamNumber?.toUpperCase() !== teamNumber.toUpperCase()
+    );
+    this.localData.roundCompletions = this.localData.roundCompletions.filter(
+      rc => rc.teamId?.toString() !== teamId && rc.teamNumber?.toUpperCase() !== teamNumber.toUpperCase()
+    );
+    this.saveLocalData();
+    return team;
   }
 
   public async updateTeamRound(teamId: string, currentRound: RoundNumber, status: TeamStatus): Promise<any> {
