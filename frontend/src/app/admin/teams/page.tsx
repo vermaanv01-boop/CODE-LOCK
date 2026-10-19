@@ -41,7 +41,7 @@ const initialFormState: TeamMemberForm = {
   stageOption: 'AUTO'
 };
 
-export default function AdminTeamsPage() {
+function AdminTeamsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [teams, setTeams] = useState<any[]>([]);
@@ -569,5 +569,19 @@ export default function AdminTeamsPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function AdminTeamsPage() {
+  return (
+    <React.Suspense
+      fallback={
+        <div className="py-24 text-center font-mono text-xs text-muted-text">
+          [CONNECTING TO AUTHORITATIVE SQUAD DIRECTORY...]
+        </div>
+      }
+    >
+      <AdminTeamsContent />
+    </React.Suspense>
   );
 }
