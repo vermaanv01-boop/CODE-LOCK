@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { getRoundQuestions, submitRoundCode, storage } from '@/lib/api';
 import { useContestStatus } from '@/lib/contest-context';
 import { LoadingState, SectionLabel } from '@/components/ui';
+import { BackButton } from '@/components/BackButton';
 import { Key, AlertTriangle, Send, ArrowRight, Clock, Check } from 'lucide-react';
 
 export default function Round1Page() {
@@ -144,6 +145,10 @@ export default function Round1Page() {
 
   return (
     <div className="space-y-6">
+      <div>
+        <BackButton href="/contest" label="CONTEST LOBBY" />
+      </div>
+
       {/* Round header band */}
       <div className="rounded-md border border-border bg-surface p-5 sm:p-6">
         <div className="flex flex-col justify-between gap-4 border-b border-border pb-4 md:flex-row md:items-center">

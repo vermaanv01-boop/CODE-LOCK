@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { getRoundCompletion, getLeaderboard, advanceRound, storage } from '@/lib/api';
 import { VerifiedStamp } from '@/components/VerifiedStamp';
 import { LeaderboardTable } from '@/components/LeaderboardTable';
+import { BackButton } from '@/components/BackButton';
 import { Stat, LoadingState, SectionLabel } from '@/components/ui';
 import { ArrowRight, Trophy } from 'lucide-react';
 
@@ -77,6 +78,10 @@ export default function Round1DashboardPage() {
 
   return (
     <div className="space-y-6">
+      <div>
+        <BackButton href="/contest" label="CONTEST LOBBY" />
+      </div>
+
       {/* Completion banner */}
       <div className="rounded-md border border-border bg-surface p-5 sm:p-8">
         <div className="flex flex-col justify-between gap-6 border-b border-border pb-6 md:flex-row md:items-start">

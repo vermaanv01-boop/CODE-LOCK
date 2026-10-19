@@ -6,6 +6,7 @@ import { getRoundQuestions, submitRoundCode, storage } from '@/lib/api';
 import { useContestStatus } from '@/lib/contest-context';
 import { VerifiedStamp } from '@/components/VerifiedStamp';
 import { LoadingState, SectionLabel } from '@/components/ui';
+import { BackButton } from '@/components/BackButton';
 import { Key, AlertTriangle, Send, Clock, Users, Lock } from 'lucide-react';
 
 export default function Round3Page() {
@@ -164,6 +165,10 @@ export default function Round3Page() {
 
   return (
     <div className="space-y-6">
+      <div>
+        <BackButton href="/contest" label="CONTEST LOBBY" />
+      </div>
+
       {/* Final Lock header */}
       <div className="rounded-md border border-primary-accent/40 bg-surface p-5 sm:p-8">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-3 text-[10px] uppercase tracking-[0.12em] text-muted-text">
