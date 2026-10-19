@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { apiRequest, getLeaderboard, storage } from '@/lib/api';
 import { useContestStatus } from '@/lib/contest-context';
 import { LeaderboardTable } from '@/components/LeaderboardTable';
+import { BackButton } from '@/components/BackButton';
 import { StatusBadge, Stat, LoadingState, SectionLabel } from '@/components/ui';
 import {
   ArrowRight,
@@ -108,6 +109,10 @@ export default function ContestDashboardPage() {
 
   return (
     <div className="space-y-6">
+      <div>
+        <BackButton href="/" label="HOME PORTAL" />
+      </div>
+
       {/* Squad identity */}
       <section className="rounded-md border border-border bg-surface p-6 sm:p-8">
         <div className="flex flex-col justify-between gap-4 border-b border-border pb-6 sm:flex-row sm:items-start">

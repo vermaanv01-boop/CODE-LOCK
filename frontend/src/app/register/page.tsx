@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { apiRequest, getContestStatus, storage } from '@/lib/api';
+import { BackButton } from '@/components/BackButton';
 import { VerifiedStamp } from '@/components/VerifiedStamp';
 import { AlertCircle, ArrowRight, Lock, Brain, Code2, Bug, Key } from 'lucide-react';
 
@@ -113,7 +114,11 @@ export default function RegisterPage() {
 
   if (isLocked) {
     return (
-      <div className="mx-auto my-12 max-w-xl rounded-md border border-border bg-surface p-8 text-center">
+      <div className="mx-auto my-12 max-w-xl space-y-4">
+        <div>
+          <BackButton href="/" label="HOME PORTAL" />
+        </div>
+        <div className="rounded-md border border-border bg-surface p-8 text-center">
         <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-md border border-warning/40 bg-accent-yellow/30 text-warning">
           <Lock className="h-6 w-6" aria-hidden="true" />
         </div>
@@ -138,12 +143,17 @@ export default function RegisterPage() {
           </Link>
         </div>
       </div>
-    );
-  }
+    </div>
+  );
+}
 
   if (successTeam) {
     return (
-      <div className="mx-auto my-8 max-w-2xl rounded-md border border-border bg-surface p-6 sm:p-10">
+      <div className="mx-auto my-8 max-w-2xl space-y-4">
+        <div>
+          <BackButton href="/" label="HOME PORTAL" />
+        </div>
+        <div className="rounded-md border border-border bg-surface p-6 sm:p-10">
         <div className="flex items-start justify-between border-b border-border pb-4">
           <div>
             <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-text">
@@ -204,11 +214,15 @@ export default function RegisterPage() {
           </button>
         </div>
       </div>
-    );
-  }
+    </div>
+  );
+}
 
   return (
-    <div className="mx-auto my-2 max-w-3xl sm:my-6">
+    <div className="mx-auto my-2 max-w-3xl space-y-4 sm:my-6">
+      <div>
+        <BackButton href="/" label="HOME PORTAL" />
+      </div>
       <div className="rounded-md border border-border bg-surface p-5 sm:p-10">
         {/* Editorial header */}
         <div className="mb-6 flex flex-col justify-between border-b-2 border-border pb-6 sm:flex-row sm:items-start">

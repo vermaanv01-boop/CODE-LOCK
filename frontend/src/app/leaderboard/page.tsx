@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { getLeaderboard, storage } from '@/lib/api';
 import { LeaderboardTable } from '@/components/LeaderboardTable';
+import { BackButton } from '@/components/BackButton';
 import { StatusBadge } from '@/components/ui';
 import { Trophy, Search, RefreshCw } from 'lucide-react';
 
@@ -47,6 +48,10 @@ export default function PublicLeaderboardPage() {
 
   return (
     <div className="space-y-6">
+      <div>
+        <BackButton href="/" label="HOME PORTAL" />
+      </div>
+
       {/* Header */}
       <div className="flex flex-col justify-between gap-4 rounded-md border border-border bg-surface p-5 sm:p-6 md:flex-row md:items-center">
         <div>

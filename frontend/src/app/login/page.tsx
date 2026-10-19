@@ -58,10 +58,14 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="mx-auto grid max-w-5xl gap-6 py-4 lg:grid-cols-12">
-      {/* Left: intro */}
-      <div className="space-y-6 lg:col-span-5">
-        <div className="rounded-md border border-border bg-surface p-6 sm:p-8">
+    <div className="mx-auto max-w-5xl space-y-4 py-4">
+      <div>
+        <BackButton href="/" label="HOME PORTAL" />
+      </div>
+      <div className="grid gap-6 lg:grid-cols-12">
+        {/* Left: intro */}
+        <div className="space-y-6 lg:col-span-5">
+          <div className="rounded-md border border-border bg-surface p-6 sm:p-8">
           <SectionLabel>Contestant access</SectionLabel>
           <h1 className="mt-1 font-serif text-3xl font-semibold tracking-tight text-primary-text sm:text-4xl">
             Team login
@@ -209,5 +213,6 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  </div>
   );
 }
