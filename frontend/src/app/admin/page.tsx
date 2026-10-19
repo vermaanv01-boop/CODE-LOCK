@@ -21,7 +21,8 @@ import {
   Activity, 
   Terminal, 
   Cpu, 
-  UserPlus 
+  UserPlus,
+  ArrowLeft
 } from 'lucide-react';
 
 export default function AdminControlRoomPage() {
