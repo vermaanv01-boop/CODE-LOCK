@@ -7,7 +7,7 @@ import { storage } from '@/lib/api';
 import { useTheme } from '@/lib/theme';
 import { useContestStatus } from '@/lib/contest-context';
 import { StatusBadge } from '@/components/ui';
-import { Menu, Sun, Moon, LogOut, Shield, Clock, Users } from 'lucide-react';
+import { Menu, Sun, Moon, LogOut, Clock, Users } from 'lucide-react';
 
 export const Header: React.FC<{
   onMenuToggle?: () => void;
@@ -17,13 +17,9 @@ export const Header: React.FC<{
   const { theme, toggleTheme } = useTheme();
   const { status, elapsedLabel, teamRevision, refreshTeam } = useContestStatus();
   const [currentTeam, setCurrentTeam] = useState<any>(null);
-  const [isAdminLoggedIn, setIsAdminLoggedIn] = useState<boolean>(false);
-
-  const isAdminRoute = pathname.startsWith('/admin');
 
   useEffect(() => {
     setCurrentTeam(storage.getTeam());
-    setIsAdminLoggedIn(!!storage.getAdminToken());
   }, [teamRevision]);
 
   const handleLogoutTeam = () => {
@@ -108,21 +104,6 @@ export const Header: React.FC<{
             )}
           </button>
 
-          {/* Organizer link (admin only / admin routes) */}
-          {(isAdminLoggedIn || isAdminRoute) && (
-            <Link
-              href="/admin"
-              className={`hidden items-center gap-1.5 rounded border px-2 py-1.5 text-xs font-semibold transition-colors sm:flex ${
-                isAdminRoute
-                  ? 'border-primary-accent bg-surface-highlight text-primary-accent'
-                  : 'border-border text-muted-text hover:border-primary-accent hover:text-primary-text'
-              }`}
-              title="Organizer control room"
-            >
-              <Shield className="h-3.5 w-3.5" aria-hidden="true" />
-              <span className="hidden md:inline">Admin</span>
-            </Link>
-          )}
 
           {/* Team session */}
           {currentTeam ? (
