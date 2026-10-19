@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { apiRequest, storage, getAdminLeaderboard, startRound } from '@/lib/api';
+import { BackButton } from '@/components/BackButton';
 import { LeaderboardTable } from '@/components/LeaderboardTable';
 import { 
   Shield, 
@@ -14,13 +15,13 @@ import {
   Clock, 
   Radio, 
   CheckCircle2, 
-  AlertTriangle,
-  LogOut,
-  Layers,
-  Activity,
-  Terminal,
-  Cpu,
-  UserPlus
+  AlertTriangle, 
+  LogOut, 
+  Layers, 
+  Activity, 
+  Terminal, 
+  Cpu, 
+  UserPlus 
 } from 'lucide-react';
 
 export default function AdminControlRoomPage() {
@@ -30,6 +31,7 @@ export default function AdminControlRoomPage() {
   const [actionLoading, setActionLoading] = useState(false);
   const [msg, setMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [currentTimeMs, setCurrentTimeMs] = useState<number>(Date.now());
+  const [activeTab, setActiveTab] = useState<'control' | 'leaderboard'>('control');
 
   const fetchDashboard = async () => {
     try {
@@ -161,6 +163,8 @@ export default function AdminControlRoomPage() {
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+            <BackButton href="/" label="PORTAL" />
+
             <Link
               href="/admin/teams?action=register"
               className="px-3.5 py-2 border border-primary-accent bg-primary-accent/10 hover:bg-primary-accent hover:text-primary-accent-contrast text-primary-accent text-xs transition-colors flex items-center gap-1.5 font-bold"
@@ -177,13 +181,17 @@ export default function AdminControlRoomPage() {
               <span>ROSTER ({stats?.registeredTeamsCount || 0})</span>
             </Link>
 
-            <Link
-              href="/admin/leaderboard"
-              className="px-3.5 py-2 border border-border hover:border-primary-accent text-primary-text hover:text-primary-accent text-xs transition-colors flex items-center gap-1.5 bg-background"
+            <button
+              onClick={() => setActiveTab(activeTab === 'control' ? 'leaderboard' : 'control')}
+              className={`px-3.5 py-2 border text-xs transition-colors flex items-center gap-1.5 font-bold ${
+                activeTab === 'leaderboard'
+                  ? 'border-primary-accent bg-primary-accent text-primary-accent-contrast'
+                  : 'border-border hover:border-primary-accent text-primary-text hover:text-primary-accent bg-background'
+              }`}
             >
               <Trophy className="w-3.5 h-3.5" />
-              <span>SCOREBOARD</span>
-            </Link>
+              <span>{activeTab === 'leaderboard' ? 'VIEW CONTROLS' : 'SCOREBOARD'}</span>
+            </button>
 
             <button
               onClick={handleLogout}
@@ -217,6 +225,33 @@ export default function AdminControlRoomPage() {
             <span className="text-[10px] text-muted-text uppercase block">DATABASE MODE</span>
             <span className="font-bold text-primary-accent">SYNCHRONIZED</span>
           </div>
+        </div>
+
+        {/* SECTION NAVIGATION TABS */}
+        <div className="flex items-center gap-2 border-t border-border mt-3 pt-3 flex-wrap">
+          <button
+            onClick={() => setActiveTab('control')}
+            className={`px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition-colors border ${
+              activeTab === 'control'
+                ? 'bg-primary-accent text-primary-accent-contrast border-primary-accent'
+                : 'bg-background text-muted-text border-border hover:border-primary-accent hover:text-primary-text'
+            }`}
+          >
+            <Activity className="w-3.5 h-3.5" />
+            <span>SECTION 1: CONTROL ROOM OPERATIONS</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('leaderboard')}
+            className={`px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition-colors border ${
+              activeTab === 'leaderboard'
+                ? 'bg-primary-accent text-primary-accent-contrast border-primary-accent'
+                : 'bg-background text-muted-text border-border hover:border-primary-accent hover:text-primary-text'
+            }`}
+          >
+            <Trophy className="w-3.5 h-3.5" />
+            <span>SECTION 2: SUPERVISORY SCOREBOARD ({leaderboard.length})</span>
+          </button>
         </div>
       </div>
 
