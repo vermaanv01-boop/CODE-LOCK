@@ -63,8 +63,8 @@
       "coder": "priya",
       "debugger": "kripa",
       "supporter": "aricha",
-      "currentRound": 1,
-      "status": "IN_ROUND_1",
+      "currentRound": 3,
+      "status": "FINISHED",
       "registeredAt": "2026-10-19T17:56:57.289Z"
     }
   ],
@@ -74,11 +74,11 @@
     "contestStartTime": "2026-10-19T17:57:21.471Z",
     "contestEndTime": null,
     "round1Status": "ACTIVE",
-    "round2Status": "LOCKED",
-    "round3Status": "LOCKED",
+    "round2Status": "ACTIVE",
+    "round3Status": "ACTIVE",
     "round1StartedAt": "2026-10-19T17:57:21.471Z",
-    "round2StartedAt": null,
-    "round3StartedAt": null
+    "round2StartedAt": "2026-10-19T18:02:13.837Z",
+    "round3StartedAt": "2026-10-19T18:03:59.094Z"
   },
   "questions": [
     {
@@ -284,6 +284,53 @@
       "active": true
     }
   ],
-  "submissions": [],
-  "roundCompletions": []
+  "submissions": [
+    {
+      "id": "sub_1792432908137",
+      "teamId": "team_1792432617289",
+      "round": 1,
+      "answer": "421873298456",
+      "correct": true,
+      "submittedAt": "2026-10-19T18:01:48.137Z"
+    },
+    {
+      "id": "sub_1792433025623",
+      "teamId": "team_1792432617289",
+      "round": 2,
+      "answer": "419832",
+      "correct": true,
+      "submittedAt": "2026-10-19T18:03:45.623Z"
+    },
+    {
+      "id": "sub_1792433146945",
+      "teamId": "team_1792432617289",
+      "round": 3,
+      "answer": "390742",
+      "correct": true,
+      "submittedAt": "2026-10-19T18:05:46.945Z"
+    }
+  ],
+  "roundCompletions": [
+    {
+      "id": "rc_1792432908139",
+      "teamId": "team_1792432617289",
+      "round": 1,
+      "completedAt": "2026-10-19T18:01:48.136Z",
+      "elapsedTimeMs": 266665
+    },
+    {
+      "id": "rc_1792433025626",
+      "teamId": "team_1792432617289",
+      "round": 2,
+      "completedAt": "2026-10-19T18:03:45.622Z",
+      "elapsedTimeMs": 91785
+    },
+    {
+      "id": "rc_1792433146947",
+      "teamId": "team_1792432617289",
+      "round": 3,
+      "completedAt": "2026-10-19T18:05:46.945Z",
+      "elapsedTimeMs": 107851
+    }
+  ]
 }
