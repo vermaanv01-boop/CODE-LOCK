@@ -65,7 +65,7 @@ export const storage = {
 
 // Administrator-only endpoints. These must carry the admin bearer token; a
 // contestant (team) session must never be able to authorize them.
-const ADMIN_ENDPOINT = /^\/(auth\/admin|contest\/start|contest\/reset|contest\/round\/\d+\/start|leaderboard\/admin)/;
+const ADMIN_ENDPOINT = /^\/(auth\/admin|contest\/start|contest\/reset|contest\/round\/\d+\/start|leaderboard\/admin|teams\/admin)/;
 
 export async function apiRequest<T = any>(
   endpoint: string,
@@ -84,7 +84,8 @@ export async function apiRequest<T = any>(
   // requests use the contestant (team) token. Neither role can authorize the
   // other's operations.
   if (!headers['Authorization']) {
-    if (ADMIN_ENDPOINT.test(endpoint)) {
+    const isDeleteTeam = options.method === 'DELETE' && endpoint.startsWith('/teams');
+    if (ADMIN_ENDPOINT.test(endpoint) || isDeleteTeam) {
       const adminToken = storage.getAdminToken();
       if (adminToken) headers['Authorization'] = `Bearer ${adminToken}`;
     } else {
@@ -132,6 +133,31 @@ export async function getAdminLeaderboard() {
 // Admin: activate an independent round (1 | 2 | 3).
 export async function startRound(round: number) {
   return await apiRequest(`/contest/round/${round}/start`, { method: 'POST' });
+}
+
+// Admin: Register a team under administrative control
+export async function adminRegisterTeam(teamData: {
+  teamNumber: string;
+  teamName: string;
+  teamLeader: string;
+  thinker: string;
+  coder: string;
+  debugger: string;
+  supporter: string;
+  currentRound?: number;
+  status?: string;
+}) {
+  return await apiRequest('/teams/admin/register', {
+    method: 'POST',
+    body: JSON.stringify(teamData)
+  });
+}
+
+// Admin: Delete/remove a team completely
+export async function adminRemoveTeam(teamIdOrNumber: string) {
+  return await apiRequest(`/teams/admin/${encodeURIComponent(teamIdOrNumber)}`, {
+    method: 'DELETE'
+  });
 }
 
 export async function submitRoundCode(round: number, teamNumber: string, code: string) {

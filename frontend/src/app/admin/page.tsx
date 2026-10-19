@@ -19,7 +19,8 @@ import {
   Layers,
   Activity,
   Terminal,
-  Cpu
+  Cpu,
+  UserPlus
 } from 'lucide-react';
 
 export default function AdminControlRoomPage() {
@@ -160,6 +161,14 @@ export default function AdminControlRoomPage() {
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+            <Link
+              href="/admin/teams?action=register"
+              className="px-3.5 py-2 border border-primary-accent bg-primary-accent/10 hover:bg-primary-accent hover:text-primary-accent-contrast text-primary-accent text-xs transition-colors flex items-center gap-1.5 font-bold"
+            >
+              <UserPlus className="w-3.5 h-3.5" />
+              <span>+ ENROLL SQUAD</span>
+            </Link>
+
             <Link
               href="/admin/teams"
               className="px-3.5 py-2 border border-border hover:border-primary-accent text-primary-text hover:text-primary-accent text-xs transition-colors flex items-center gap-1.5 bg-background"
