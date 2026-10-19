@@ -36,7 +36,7 @@
       "debugger": "Ayush Dubey",
       "supporter": "Anusha Sharma",
       "currentRound": 1,
-      "status": "ROUND_1_COMPLETE",
+      "status": "IN_ROUND_1",
       "registeredAt": "2026-10-07T16:53:34.208Z"
     },
     {
@@ -52,17 +52,31 @@
       "currentRound": 1,
       "status": "IN_ROUND_1",
       "registeredAt": "2026-10-09T16:36:38.807Z"
+    },
+    {
+      "id": "team_1792432617289_cpzbb",
+      "_id": "team_1792432617289",
+      "teamNumber": "T-03",
+      "teamName": "hello",
+      "teamLeader": "arya",
+      "thinker": "arya",
+      "coder": "priya",
+      "debugger": "kripa",
+      "supporter": "aricha",
+      "currentRound": 1,
+      "status": "IN_ROUND_1",
+      "registeredAt": "2026-10-19T17:56:57.289Z"
     }
   ],
   "contest": {
     "id": "contest_main",
     "status": "ACTIVE",
-    "contestStartTime": "2026-10-18T17:59:45.310Z",
+    "contestStartTime": "2026-10-19T17:57:21.471Z",
     "contestEndTime": null,
     "round1Status": "ACTIVE",
-    "round2Status": "READY",
+    "round2Status": "LOCKED",
     "round3Status": "LOCKED",
-    "round1StartedAt": "2026-10-18T17:59:45.310Z",
+    "round1StartedAt": "2026-10-19T17:57:21.471Z",
     "round2StartedAt": null,
     "round3StartedAt": null
   },
@@ -270,23 +284,6 @@
       "active": true
     }
   ],
-  "submissions": [
-    {
-      "id": "sub_1792346500855",
-      "teamId": "team_1791392014208",
-      "round": 1,
-      "answer": "421873298456",
-      "correct": true,
-      "submittedAt": "2026-10-18T18:01:40.855Z"
-    }
-  ],
-  "roundCompletions": [
-    {
-      "id": "rc_1792346500858",
-      "teamId": "team_1791392014208",
-      "round": 1,
-      "completedAt": "2026-10-18T18:01:40.855Z",
-      "elapsedTimeMs": 115545
-    }
-  ]
+  "submissions": [],
+  "roundCompletions": []
 }
