@@ -10,75 +10,18 @@
       "createdAt": "2026-10-07T16:13:00.363Z"
     }
   ],
-  "teams": [
-    {
-      "id": "team_1791390445301_31wt5",
-      "_id": "team_1791390445301",
-      "teamNumber": "T-027",
-      "teamName": "BYTE RAIDERS",
-      "teamLeader": "Alex Vance",
-      "thinker": "Elena Rostova",
-      "coder": "Marcus Brody",
-      "debugger": "Sarah Chen",
-      "supporter": "Kenji Sato",
-      "currentRound": 1,
-      "status": "IN_ROUND_1",
-      "registeredAt": "2026-10-07T16:27:25.301Z"
-    },
-    {
-      "id": "team_1791392014208_hi08q",
-      "_id": "team_1791392014208",
-      "teamNumber": "T-01",
-      "teamName": "vitaweave",
-      "teamLeader": "Anushka Verma",
-      "thinker": "Anushka verma",
-      "coder": "Tanush patel",
-      "debugger": "Ayush Dubey",
-      "supporter": "Anusha Sharma",
-      "currentRound": 1,
-      "status": "IN_ROUND_1",
-      "registeredAt": "2026-10-07T16:53:34.208Z"
-    },
-    {
-      "id": "team_1791563798807_rpwpg",
-      "_id": "team_1791563798807",
-      "teamNumber": "T-02",
-      "teamName": "team tlux",
-      "teamLeader": "Anushka sharma",
-      "thinker": "vamika",
-      "coder": "akkay",
-      "debugger": "pratiksha",
-      "supporter": "prapti",
-      "currentRound": 1,
-      "status": "IN_ROUND_1",
-      "registeredAt": "2026-10-09T16:36:38.807Z"
-    },
-    {
-      "id": "team_1792432617289_cpzbb",
-      "_id": "team_1792432617289",
-      "teamNumber": "T-03",
-      "teamName": "hello",
-      "teamLeader": "arya",
-      "thinker": "arya",
-      "coder": "priya",
-      "debugger": "kripa",
-      "supporter": "aricha",
-      "currentRound": 3,
-      "status": "FINISHED",
-      "registeredAt": "2026-10-19T17:56:57.289Z"
-    }
-  ],
+  "teams": [],
   "contest": {
     "id": "contest_main",
-    "status": "ACTIVE",
-    "contestStartTime": "2026-10-19T17:57:21.471Z",
+    "status": "NOT_STARTED",
+    "contestStartTime": null,
     "contestEndTime": null,
-    "round1Status": "ACTIVE",
-    "round2Status": "ACTIVE",
-    "round3Status": "ACTIVE",
-    "round1StartedAt": "2026-10-19T17:57:21.471Z",
-    "round2StartedAt": "2026-10-19T18:02:13.837Z",
-    "round3StartedAt": "2026-10-19T18:03:59.094Z"
+    "round1Status": "READY",
+    "round2Status": "LOCKED",
+    "round3Status": "LOCKED",
+    "round1StartedAt": null,
+    "round2StartedAt": null,
+    "round3StartedAt": null
   },
   "questions": [
     {
@@ -284,53 +227,6 @@
       "active": true
     }
   ],
-  "submissions": [
-    {
-      "id": "sub_1792432908137",
-      "teamId": "team_1792432617289",
-      "round": 1,
-      "answer": "421873298456",
-      "correct": true,
-      "submittedAt": "2026-10-19T18:01:48.137Z"
-    },
-    {
-      "id": "sub_1792433025623",
-      "teamId": "team_1792432617289",
-      "round": 2,
-      "answer": "419832",
-      "correct": true,
-      "submittedAt": "2026-10-19T18:03:45.623Z"
-    },
-    {
-      "id": "sub_1792433146945",
-      "teamId": "team_1792432617289",
-      "round": 3,
-      "answer": "390742",
-      "correct": true,
-      "submittedAt": "2026-10-19T18:05:46.945Z"
-    }
-  ],
-  "roundCompletions": [
-    {
-      "id": "rc_1792432908139",
-      "teamId": "team_1792432617289",
-      "round": 1,
-      "completedAt": "2026-10-19T18:01:48.136Z",
-      "elapsedTimeMs": 266665
-    },
-    {
-      "id": "rc_1792433025626",
-      "teamId": "team_1792432617289",
-      "round": 2,
-      "completedAt": "2026-10-19T18:03:45.622Z",
-      "elapsedTimeMs": 91785
-    },
-    {
-      "id": "rc_1792433146947",
-      "teamId": "team_1792432617289",
-      "round": 3,
-      "completedAt": "2026-10-19T18:05:46.945Z",
-      "elapsedTimeMs": 107851
-    }
-  ]
+  "submissions": [],
+  "roundCompletions": []
 }
