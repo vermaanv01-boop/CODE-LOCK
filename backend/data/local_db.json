@@ -10,36 +10,7 @@
       "createdAt": "2026-10-07T16:13:00.363Z"
     }
   ],
-  "teams": [
-    {
-      "id": "team_1792499986716_mtxns",
-      "_id": "team_1792499986716",
-      "teamNumber": "T-01",
-      "teamName": "hello",
-      "teamLeader": "anus",
-      "thinker": "anushka",
-      "coder": "anush",
-      "debugger": "ambika",
-      "supporter": "krina",
-      "currentRound": 1,
-      "status": "REGISTERED",
-      "registeredAt": "2026-10-20T12:39:46.716Z"
-    },
-    {
-      "id": "team_1792500237339_et8lp",
-      "_id": "team_1792500237339",
-      "teamNumber": "T-02",
-      "teamName": "byyy",
-      "teamLeader": "arya",
-      "thinker": "prina",
-      "coder": "harshita",
-      "debugger": "sagar",
-      "supporter": "aryan",
-      "currentRound": 1,
-      "status": "REGISTERED",
-      "registeredAt": "2026-10-20T12:43:57.339Z"
-    }
-  ],
+  "teams": [],
   "contest": {
     "id": "contest_main",
     "status": "NOT_STARTED",
